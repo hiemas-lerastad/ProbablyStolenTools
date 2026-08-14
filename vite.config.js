@@ -6,5 +6,5 @@ export default defineConfig({
   plugins: [react()],
   // GitHub Pages serves project sites at https://<user>.github.io/<repo>/
   // so assets must be requested from that sub-path rather than the domain root.
-  base: '/RatColonyManager/',
+  base: '/ProbablyStolenGameRatManager/',
 })

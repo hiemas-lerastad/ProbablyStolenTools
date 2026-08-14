@@ -1,13 +1,26 @@
-import { createContext, useState } from 'react';
+import { createContext, useState, useEffect } from 'react';
 
-export const RatDataContext = createContext(['', () => ''])
+const STORAGE_KEY = "ratData";
+
+export const RatDataContext = createContext([[], () => []])
 
 export const RatDataProvider = ({children}) => {
-	const [ratData, setRatData] = useState({})
+  const [ratData, setRatData] = useState(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
 
-	return (
-		<RatDataContext.Provider value={{ ratData, setRatData }}>
-			{children}
-		</RatDataContext.Provider>
-	)
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(ratData));
+  }, [ratData]);
+
+  return (
+    <RatDataContext.Provider value={{ ratData, setRatData }}>
+      {children}
+    </RatDataContext.Provider>
+  )
 }
