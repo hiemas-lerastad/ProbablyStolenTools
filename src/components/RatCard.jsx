@@ -55,6 +55,7 @@ function getRatCardRating(data, stats) {
       total += getRatingScore(flags, invert);
     }
   }
+
   return total;
 }
 
@@ -79,16 +80,16 @@ function GeneValue({data, propertyName, stats, title}) {
 }
 
 function getRecommendation(rating) {
-  if (rating >= 17) {
+  if (rating >= 8) {
     return {class: "rat-card-gene-value--maximum", text: "Strong Candidate For Breeding"}
-  } else if (rating >= 5) {
+  } else if (rating > 0) {
     return {class: "rat-card-gene-value--above-average", text: "Overall Positive"}
   } else if (rating == 0) {
     return {text: "Investigate"}
-  } else if (rating >= -16) {
-    return {class: "rat-card-gene-value--below-average", text: "Overall Negative"}
-  } else if (rating < -16) {
+  } else if (rating < -10) {
     return {class: "rat-card-gene-value--minimum", text: "Strong Candidate For Neutering"}
+  } else if (rating < 0) {
+    return {class: "rat-card-gene-value--below-average", text: "Overall Negative"}
   }
 }
 
