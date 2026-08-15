@@ -7,11 +7,17 @@ const GENE_FIELDS = ["value", "highest", "lowest"];
 
 function getComparisonFlags(value, fieldStats) {
   const num = Number(value);
+
+  const isMax = num === fieldStats.max && num != fieldStats.average
+  const isMin = num === fieldStats.min && num != fieldStats.average
+  const isAbove = num > fieldStats.average && num != fieldStats.average
+  const isBelow = num < fieldStats.average && num != fieldStats.average
+
   return {
-    isMax: num === fieldStats.max,
-    isMin: num === fieldStats.min,
-    isAbove: num > fieldStats.average,
-    isBelow: num < fieldStats.average,
+    isMax: isMax,
+    isMin: isMin && !isMax,
+    isAbove: num > fieldStats.average && !isMax,
+    isBelow: num < fieldStats.average && !isMin,
   };
 }
 
