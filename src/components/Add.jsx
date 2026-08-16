@@ -4,8 +4,8 @@ import { RatDataContext } from "../context/RatData.jsx"
 
 function getHighLow(a, b) {
   return Number(a) >= Number(b)
-    ? { highest: a, lowest: b, value: getAverage(a, b)}
-    : { highest: b, lowest: a, value: getAverage(a, b)};
+    ? { highest: a, lowest: b, value: +(getAverage(a, b).toFixed(2))}
+    : { highest: b, lowest: a, value: +(getAverage(a, b).toFixed(2))};
 }
 
 function getAverage(a, b) {
