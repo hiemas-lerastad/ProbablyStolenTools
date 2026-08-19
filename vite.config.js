@@ -1,10 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // GitHub Pages serves project sites at https://<user>.github.io/<repo>/
-  // so assets must be requested from that sub-path rather than the domain root.
   base: '/ProbablyStolenTools/',
+  build: {
+    rollupOptions: {
+      input: {
+        ratManager: resolve(__dirname, 'rat-manager.html'),
+        saveEditor: resolve(__dirname, 'save-editor.html'),
+      },
+    },
+  },
 })
