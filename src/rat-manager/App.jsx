@@ -1,15 +1,15 @@
 import React, { useState, useContext, useEffect } from 'react';
 
-import './App.css'
+import '../App.css'
 
-import { RatDataContext, RatDataProvider } from "./context/RatData.jsx"
+import { RatDataContext, RatDataProvider } from "../context/RatData.jsx"
 
-import { ReccomendationsMenu } from "./components/Reccomendations.jsx"
-import { InfoMenu } from "./components/Info.jsx"
-import { IconButton } from "./components/IconButton.jsx"
-import { Key } from "./components/Key.jsx"
+import { ReccomendationsMenu } from "../components/Reccomendations.jsx"
+import { InfoMenu } from "../components/Info.jsx"
+import { IconButton } from "../components/IconButton.jsx"
+import { Key } from "../components/Key.jsx"
 
-import diagonalImg from "./assets/Diagonal.png"
+import diagonalImg from "../assets/Diagonal.png"
 
 function Main(props) {
   const [activeTab, setActiveTab] = useState('recommendations')
