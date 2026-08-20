@@ -1,0 +1,33 @@
+.rat-card-list {
+  display: grid;
+  flex-direction: row;
+  grid-template-columns: calc((100% - 50px) / 4) calc((100% - 50px) / 4) calc((100% - 50px) / 4) calc((100% - 50px) / 4);
+  gap: 16px;
+  width: calc(100%);
+  flex-wrap: wrap;
+  padding: 16px 0;
+}
+
+@media (max-width: 1200px) {
+  .rat-card-list {
+    display: grid;
+    flex-direction: row;
+    grid-template-columns: calc((100% - 32px) / 3) calc((100% - 32px) / 3) calc((100% - 32px) / 3);
+  }
+}
+
+@media (max-width: 768px) {
+  .rat-card-list {
+    display: grid;
+    flex-direction: row;
+    grid-template-columns: calc((100% - 20px) / 2) calc((100% - 20px) / 2);
+  }
+}
+
+@media (max-width: 550px) {
+  .rat-card-list {
+    display: grid;
+    flex-direction: row;
+    grid-template-columns: calc(100%);
+  }
+}

@@ -46,4 +46,4 @@ function serializeSave(state) {
   return lines.join("\n");
 }
 
-export { parseSave };
+export { parseSave, serializeSave };

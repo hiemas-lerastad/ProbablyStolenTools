@@ -1,6 +1,8 @@
 import { useContext, useState, useEffect } from "react";
 
-import { RatDataContext } from "../context/RatData.jsx"
+import { RatDataContext } from "../../../context/RatData.jsx"
+
+import './Add.css'
 
 function getHighLow(a, b) {
   return Number(a) >= Number(b)

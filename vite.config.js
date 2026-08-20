@@ -8,6 +8,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        main: resolve(__dirname, 'index.html'),
         ratManager: resolve(__dirname, 'rat-manager.html'),
         saveEditor: resolve(__dirname, 'save-editor.html'),
       },

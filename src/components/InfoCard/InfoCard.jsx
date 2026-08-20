@@ -1,6 +1,8 @@
 import { useContext, useState, useEffect } from "react";
 
-import { IconButton } from "./IconButton.jsx"
+import { IconButton } from "../IconButton/IconButton.jsx"
+
+import './InfoCard.css'
 
 function InfoCard({children, enableClose, closeFunc, title, className, iconName = "close"}) {
   return (

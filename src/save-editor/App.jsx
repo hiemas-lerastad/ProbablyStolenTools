@@ -4,21 +4,31 @@ import '../App.css'
 
 import { SaveDataContext, SaveDataProvider } from "../context/SaveData.jsx"
 
-import { IconButton } from "../components/IconButton.jsx"
-import { SaveLoader } from "../components/SaveLoader.jsx"
-import { InventoryItemList } from "../components/InventoryItemList.jsx"
+import { IconButton } from "../components/IconButton/IconButton.jsx"
+import { SaveLoader } from "../components/SaveEditor/SaveLoader/SaveLoader.jsx"
+import { FilterBar } from "../components/SaveEditor/Inventory/FilterBar/FilterBar.jsx"
+import { InventoryItemList } from "../components/SaveEditor/Inventory/InventoryItemList/InventoryItemList.jsx"
+import { INV_KEYS } from "../constants.js"
 
 import diagonalImg from "../assets/Diagonal.png"
 
 function Main(props) {
-  const [activeTab, setActiveTab] = useState('recommendations')
   const {saveData, setSaveData} = useContext(SaveDataContext);
-  console.log(saveData)
+  const [activeInventory, setActiveInventory] = useState(INV_KEYS[0])
+  const [filterValue, setFilterValue] = useState("");
+
+  function handleInventoryChange(value) {
+    setActiveInventory(value)
+  }
+
+  function handleFilterChange(value) {
+    setFilterValue(value)
+  }
+
   return (
     <div className="main">
       <div className="main-nav">
-        <IconButton onClickFunc={() => {setActiveTab('home')}} iconName="home" className="main-nav-home" />
-        <IconButton onClickFunc={() => {console.log("info"); setActiveTab('info')}} iconName="info" className="main-nav-info" />
+        <IconButton onClickFunc={() => {}} iconName="home" className="main-nav-home" tag="a" href="/ProbablyStolenTools/" />
       </div>
       <div className="main-inner">
         <div className="main-title-row">
@@ -30,6 +40,9 @@ function Main(props) {
         </div>
         <div className="main-header">
           <SaveLoader />
+          {saveData &&
+            <FilterBar onInventorySelected={handleInventoryChange} onInventoryFiltered={handleFilterChange}/>
+          }
           <div className="main-header-separator">
             <img src={diagonalImg}  className="main-title-diagonal"/>
             <div className="main-header-separator-body"></div>
@@ -38,7 +51,7 @@ function Main(props) {
         </div>
         <div className="main-content">
           {saveData &&
-            <InventoryItemList />
+            <InventoryItemList filter={filterValue} selectedInvKey={activeInventory} />
           }
         </div>
       </div>

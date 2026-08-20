@@ -1,0 +1,7 @@
+.inventory-item {
+  cursor: pointer;
+}
+
+.inventory-item:hover {
+  background: #c1604a;
+}

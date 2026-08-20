@@ -1,6 +1,8 @@
 import { useContext, useState, useEffect } from "react";
 
-import { InfoCard } from "./InfoCard.jsx"
+import { InfoCard } from "../../InfoCard/InfoCard.jsx"
+
+import './Key.css'
 
 function Key() {
 

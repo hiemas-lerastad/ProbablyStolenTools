@@ -4,10 +4,10 @@ import '../App.css'
 
 import { RatDataContext, RatDataProvider } from "../context/RatData.jsx"
 
-import { ReccomendationsMenu } from "../components/Reccomendations.jsx"
-import { InfoMenu } from "../components/Info.jsx"
-import { IconButton } from "../components/IconButton.jsx"
-import { Key } from "../components/Key.jsx"
+import { ReccomendationsMenu } from "../components/RatManager/Recommendations/Recommendations.jsx"
+import { InfoMenu } from "../components/Info/Info.jsx"
+import { IconButton } from "../components/IconButton/IconButton.jsx"
+import { Key } from "../components/RatManager/Key/Key.jsx"
 
 import diagonalImg from "../assets/Diagonal.png"
 
@@ -18,8 +18,7 @@ function Main(props) {
   return (
     <div className="main">
       <div className="main-nav">
-        <IconButton onClickFunc={() => {setActiveTab('recommendations')}} iconName="home" className="main-nav-home" />
-        <IconButton onClickFunc={() => {console.log("info"); setActiveTab('info')}} iconName="info" className="main-nav-info" />
+        <IconButton onClickFunc={() => {}} iconName="home" className="main-nav-home" tag="a" href="/ProbablyStolenTools/" />
       </div>
       <div className="main-inner">
         <div className="main-title-row">

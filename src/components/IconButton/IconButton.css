@@ -1,0 +1,16 @@
+.icon-button {
+  height: 32px;
+  width: 32px;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.icon-button  img {
+  position: absolute;
+  left: 0;
+  top: 0;
+}

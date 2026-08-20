@@ -1,6 +1,8 @@
 import { useContext, useState, useEffect } from "react";
 
-import { InfoCard } from "./InfoCard.jsx"
+import { InfoCard } from "../../InfoCard/InfoCard.jsx"
+
+import "./RatCard.css"
 
 const INVERTED_PROPERTIES = new Set(["hungerRate"]);
 const GENE_FIELDS = ["value", "highest", "lowest"];

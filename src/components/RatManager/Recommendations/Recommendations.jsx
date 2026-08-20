@@ -1,9 +1,11 @@
 import { useContext, useState, useEffect } from "react";
 
-import { RatDataContext } from "../context/RatData.jsx"
-import { RatCard } from "./RatCard.jsx"
-import { InfoCard } from "./InfoCard.jsx"
-import { AddMenu } from "./Add.jsx"
+import { RatDataContext } from "../../../context/RatData.jsx"
+import { RatCard } from "../RatCard/RatCard.jsx"
+import { InfoCard } from "../../InfoCard/InfoCard.jsx"
+import { AddMenu } from "../Add/Add.jsx"
+
+import "./Recommendations.css"
 
 function getValues(data, prop) {
   return data.map(item => Number(item[prop]));
