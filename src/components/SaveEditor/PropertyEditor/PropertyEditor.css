@@ -1,0 +1,22 @@
+.property-editor {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.property-editor-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.property-editor-json {
+  min-height: 160px;
+  font-family: monospace;
+}
+
+.property-editor-error {
+  color: #c0392b;
+}

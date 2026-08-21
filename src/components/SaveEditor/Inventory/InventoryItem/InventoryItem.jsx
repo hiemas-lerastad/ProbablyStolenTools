@@ -14,6 +14,11 @@ function InventoryItem({ index, item, className = "", onSelectFunc, onDuplicateF
     }
   }
 
+  function handleCopyJson(e) {
+    e.stopPropagation();
+    navigator.clipboard.writeText(JSON.stringify(item, null, 2));
+  }
+
   function handleDuplicate(e) {
     e.stopPropagation();
     if (onDuplicateFunc) {
@@ -43,6 +48,7 @@ function InventoryItem({ index, item, className = "", onSelectFunc, onDuplicateF
       <td className="inventory-item-cell inventory-item-cell-uuid">{item.uuid}</td>
       <td className="inventory-item-cell inventory-item-cell-uniqueid">{item.uniqueId}</td>
       <td className="inventory-item-cell inventory-item-cell-actions">
+        <ContentButton onClickFunc={handleCopyJson} label="Copy JSON" />
         <ContentButton onClickFunc={handleDuplicate} label="Duplicate" />
         <ContentButton onClickFunc={handleDelete} label="Delete" />
       </td>

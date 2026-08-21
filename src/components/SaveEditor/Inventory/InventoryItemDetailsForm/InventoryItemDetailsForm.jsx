@@ -3,45 +3,14 @@ import { useContext, useState, useEffect } from "react";
 import { InfoCard } from "../../../InfoCard/InfoCard.jsx"
 import { ContentInput } from "../../../ContentInput/ContentInput.jsx"
 import { ContentButton } from "../../../ContentButton/ContentButton.jsx"
-import { IconButton } from "../../../IconButton/IconButton.jsx"
+import { EditableField } from "../../../EditableField/EditableField.jsx"
 
 import { SaveDataContext } from "../../../../context/SaveData.jsx"
-import { EDITABLE_FIELDS } from "../../../../constants.js"
+import { EDITABLE_FIELDS, POSITION_FIELDS } from "../../../../constants.js"
 
 import { getTagValue, setTagValueFromInput, addItemTag, removeItemTag } from "../../../../utilities/ItemHelpers.js"
 
 import "./InventoryItemDetailsForm.css"
-
-function EditableField({label, value, type, onValueChange, onDeletePressed}) {
-
-  function handleValueChange(e) {
-    if (onValueChange) {
-      onValueChange(label, e.currentTarget.value)
-    }
-  }
-
-  function handleDeletePressed(e) {
-    if (onDeletePressed) {
-      onDeletePressed(label)
-    }
-  }
-
-  return (
-    <label className="editable-section-field">
-      <span>{label}</span>
-      <ContentInput type={type} value={value} onChangeFunc={handleValueChange} className="details-input"/>
-      {onDeletePressed &&
-        // <button onClick={handleDeletePressed}>X</button>
-      <IconButton onClickFunc={handleDeletePressed} iconName="close"tag="button" />
-      }
-    </label>
-  );
-}
-
-const POSITION_FIELDS = [
-  ["x", "<minX>k__BackingField"],
-  ["y", "<minY>k__BackingField"],
-];
 
 function updateItem(prev, invKey, index, updater) {
   const saveItems = prev.inventories[invKey].saveItems;
@@ -98,13 +67,13 @@ function InventoryItemDetailsForm({item, index, invKey, handleClose}) {
   var detailsFields = []
   for (const [field, type] of EDITABLE_FIELDS) {
     var value = item[field]
-    detailsFields.push(<EditableField key={field} label={field} value={value} type={type} onValueChange={(f, v) => handleDetailsFieldChange(f, v, type)}/>)
+    detailsFields.push(<EditableField key={field} label={field} value={value} type={type} onValueChange={(f, v) => handleDetailsFieldChange(f, v, type)} className="details-input" wrapperClassName="editable-section-field"/>)
   }
 
   var positionFields = []
   for (const [label, field] of POSITION_FIELDS) {
     var value = item.itemModifiedShape[field]
-    positionFields.push(<EditableField key={field} label={label} value={value} type="number" onValueChange={(f, v) => handlePositionFieldChange(field, v)}/>)
+    positionFields.push(<EditableField key={field} label={label} value={value} type="number" onValueChange={(f, v) => handlePositionFieldChange(field, v)} className="details-input" wrapperClassName="editable-section-field"/>)
   }
 
   var tagsFields = []
@@ -112,7 +81,7 @@ function InventoryItemDetailsForm({item, index, invKey, handleClose}) {
     const tag = item._values[item._keys.indexOf(key)];
     const value = getTagValue(tag)
 
-    tagsFields.push(<EditableField key={key} label={key} value={value} type="text" onValueChange={(f, v) => handleTagFieldChange(f, v)} onDeletePressed={handleTagDeletion}/>)
+    tagsFields.push(<EditableField key={key} label={key} value={value || ""} type="text" onValueChange={(f, v) => handleTagFieldChange(f, v)} onDeletePressed={handleTagDeletion} className="details-input" wrapperClassName="editable-section-field"/>)
   })
 
   return (

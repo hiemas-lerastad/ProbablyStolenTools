@@ -30,10 +30,49 @@ const EDITABLE_FIELDS = [
   ["itemType", "text"], ["spriteAtlasPath", "text"], ["spritePath", "text"],
 ];
 
-const PLAYER_STORE_FIELDS = [
-  ["playerCash", "number"],
-  ["wildFavor", "number"],
-  ["IsPropertyPaid", "checkbox"]
+const PLAYER_FIELDS = [
+  ["playerCash", "number", "playerStore"],
+  ["wildFavor", "number", "playerStore"],
+  ["evidenceLevel", "number", "playerStore", "secData"],
+  ["daysSinceNicotineConsumption", "number", "playerStore", "healthData"],
+  ["daysSinceAlcoholConsumption", "number", "playerStore", "healthData"],
+  ["daysSinceNarcoticConsumption", "number", "playerStore", "healthData"],
+  ["daysSinceSentinelInjection", "number", "playerStore", "healthData"],
+  ["sentinelPool", "number", "playerStore", "healthData"],
+  ["woundState", "number", "playerStore", "healthData"],
+  ["isWoundStable", "checkbox", "playerStore", "healthData"],
+  ["isWoundedFresh", "checkbox", "playerStore", "healthData"],
+  ["wentToAfterhoursLastNight", "checkbox", "playerStore", "healthData"],
+];
+
+const STORE_FIELDS = [
+  ["IsPropertyPaid", "checkbox", "playerStore"],
+  ["baseStoreAttractiveness", "number", "playerStore"],
+  ["todayGutterflowPurity", "number", "storeStation"],
+  ["todayRustwaterPurity", "number", "storeStation"],
+  ["isHardMode", "checkbox", "playerStore"],
+  ["endlessMode", "checkbox", "playerStore"],
+  ["skipIntro", "checkbox", "playerStore"],
+];
+
+const REPUTATION_FIELDS = [
+  ["amount", "number"], ["strength", "number"], ["influence", "number"],
+  ["actionCooldown", "number"], ["currentReportPenalty", "number"], ["repLossMultiplier", "number"],
+  ["canVandalized", "checkbox"],
+];
+
+const PERK_FIELDS = [
+  ["perkThreshold", "number"], ["perkType", "number"],
+  ["isUnlocked", "checkbox"], ["isAlwaysActive", "checkbox"],
+];
+
+const POSITION_FIELDS = [
+  ["x", "<minX>k__BackingField"],
+  ["y", "<minY>k__BackingField"],
+];
+
+const ADVANCED_FIELDS = [
+
 ];
 
 export {
@@ -41,5 +80,10 @@ export {
   INV_LABELS,
   REQUIRED_ITEM_FIELDS,
   EDITABLE_FIELDS,
-  PLAYER_STORE_FIELDS
+  PLAYER_FIELDS,
+  STORE_FIELDS,
+  ADVANCED_FIELDS,
+  REPUTATION_FIELDS,
+  PERK_FIELDS,
+  POSITION_FIELDS
 };

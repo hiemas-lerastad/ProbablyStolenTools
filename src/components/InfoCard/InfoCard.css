@@ -42,3 +42,8 @@
 .info-card-empty .info-card-inner {
   display: none;
 }
+
+.content-card > .info-card-inner {
+  background: #ecdca6;
+  color: #5c3a2e;
+}
