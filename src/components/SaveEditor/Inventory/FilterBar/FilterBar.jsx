@@ -2,7 +2,10 @@ import { useContext, useState, useEffect } from "react";
 
 import { SaveDataContext } from "../../../../context/SaveData.jsx"
 import { IconButton } from "../../../IconButton/IconButton.jsx"
+import { ContentInput } from "../../../ContentInput/ContentInput.jsx"
 import { INV_LABELS } from "../../../../constants.js"
+
+import "./FilterBar.css"
 
 function DropdownOption({index,value, name}) {
   return(
@@ -34,20 +37,20 @@ function FilterBar({ onInventorySelected, onInventoryFiltered }) {
   var inventorySelectors = []
 
   for (const [index, item] of inventories.entries()) {
-    inventorySelectors.push(<DropdownOption index={index} value={item} name={INV_LABELS[item]}/>);
+    inventorySelectors.push(<DropdownOption index={index} key={index} value={item} name={INV_LABELS[item]}/>);
   }
 
   return (
     <div className="filter-bar">
       <label>
         <span>Inventories: </span>
-        <select onChange={handleInventoryChange}>
+        <ContentInput tag="select" onChangeFunc={handleInventoryChange}>
           {inventorySelectors}
-        </select>
+        </ContentInput>
       </label>
       <label>
         <span>Filter: </span>
-        <input type="text" onChange={handleFilterChange}/>
+        <ContentInput type="text" onChangeFunc={handleFilterChange}/>
       </label>
     </div>
   );

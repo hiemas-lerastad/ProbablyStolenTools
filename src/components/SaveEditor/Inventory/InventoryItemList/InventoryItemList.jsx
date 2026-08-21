@@ -4,9 +4,13 @@ import { SaveDataContext, SaveDataProvider } from "../../../../context/SaveData.
 
 import { InventoryItem } from "../InventoryItem/InventoryItem.jsx"
 import { InventoryItemDetailsForm } from "../InventoryItemDetailsForm/InventoryItemDetailsForm.jsx"
+import { ContentInput } from "../../../ContentInput/ContentInput.jsx"
+import { ContentButton } from "../../../ContentButton/ContentButton.jsx"
 
 import { INV_KEYS } from "../../../../constants.js"
 import { getCustomNameTag, addChildItemFromRaw, addRootItemFromRaw, duplicateItem, removeSaveItem } from "../../../../utilities/ItemHelpers.js"
+
+import "./InventoryItemList.css"
 
 function InventoryItemList({selectedInvKey, filter = "", className = ""}) {
   const {saveData, setSaveData} = useContext(SaveDataContext);
@@ -69,7 +73,7 @@ function InventoryItemList({selectedInvKey, filter = "", className = ""}) {
     for (const [index, item] of itemsData.entries()) {
       const customName = getCustomNameTag(item);
       if (!filter || filter == "" || item.identifier.toLowerCase().includes(filter) || item.name.toLowerCase().includes(filter) || (customName && String(customName).toLowerCase().includes(filter))) {
-        items.push(<InventoryItem key={index} item={item} index={index} onSelectFunc={handleItemSelection} onDuplicateFunc={handleDuplicateItem} onDeleteFunc={handleDeleteItem}/>);
+        items.push(<InventoryItem key={index} item={item} index={index} onSelectFunc={handleItemSelection} onDuplicateFunc={handleDuplicateItem} onDeleteFunc={handleDeleteItem} className={detailIndex == index ? "active" : ""}/>);
       }
     }
   }
@@ -81,7 +85,7 @@ function InventoryItemList({selectedInvKey, filter = "", className = ""}) {
       }
       <table className="inventory-item-list-table">
         <tbody className="inventory-item-list-body">
-          <tr className="inventory-item">
+          <tr className="inventory-item inventory-item-header">
             <th className="inventory-item-cell inventory-item-cell-index">Index</th>
             <th className="inventory-item-cell inventory-item-cell-id">ID</th>
             <th className="inventory-item-cell inventory-item-cell-name">NAME</th>
@@ -93,15 +97,15 @@ function InventoryItemList({selectedInvKey, filter = "", className = ""}) {
         </tbody>
       </table>
       <div className="inventory-item-raw-add">
-        <select value={rawParentIdx} onChange={e => setRawParentIdx(e.currentTarget.value)}>
+        <ContentInput tag="select" value={rawParentIdx} onChangeFunc={e => setRawParentIdx(e.currentTarget.value)} >
           <option value="" disabled>Select container...</option>
           <option value="root">Selected inventory (no container)</option>
           {containerOptions.map(({index, item}) => (
             <option key={index} value={index}>[{index}] {item.identifier} ({item.name})</option>
           ))}
-        </select>
-        <textarea value={rawJson} onChange={e => setRawJson(e.currentTarget.value)} placeholder="Raw item JSON"/>
-        <button disabled={!rawParentIdx || !rawJson} onClick={handleAddRawItem}>Add Item</button>
+        </ContentInput>
+        <ContentInput tag="textarea" value={rawJson} onChangeFunc={e => setRawJson(e.currentTarget.value)} placeholder="Raw item JSON" />
+        <ContentButton disabled={!rawParentIdx || !rawJson} onClickFunc={handleAddRawItem} label="Add Item" />
         {rawError && <p className="inventory-item-raw-add-error">{rawError}</p>}
       </div>
     </div>

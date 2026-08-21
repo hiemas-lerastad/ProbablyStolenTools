@@ -1,7 +1,7 @@
 .editable-section-fields {
   display: flex;
   flex-direction: row;
-  gap: 0 16px;
+  gap: 4px 16px;
   flex-wrap: wrap;
 }
 
@@ -9,4 +9,18 @@
   display: flex;
   gap: 4px;
   flex-basis: calc(50% - 8px);
+  width: min-content;
+  align-content: center;
+  flex-wrap: wrap;
+}
+
+.editable-section-field span {
+  display: flex;
+  align-items: center;
+}
+
+.editable-section-footer {
+  padding-top: 8px;
+  display: flex;
+  gap: 4px;
 }

@@ -30,9 +30,16 @@ const EDITABLE_FIELDS = [
   ["itemType", "text"], ["spriteAtlasPath", "text"], ["spritePath", "text"],
 ];
 
+const PLAYER_STORE_FIELDS = [
+  ["playerCash", "number"],
+  ["wildFavor", "number"],
+  ["IsPropertyPaid", "checkbox"]
+];
+
 export {
   INV_KEYS,
   INV_LABELS,
   REQUIRED_ITEM_FIELDS,
-  EDITABLE_FIELDS
+  EDITABLE_FIELDS,
+  PLAYER_STORE_FIELDS
 };

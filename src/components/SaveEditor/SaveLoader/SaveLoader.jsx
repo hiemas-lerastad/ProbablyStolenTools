@@ -2,6 +2,8 @@ import { useContext, useState, useEffect } from "react";
 import { parseSave, serializeSave } from "../../../utilities/SaveHelpers.js"
 import { SaveDataContext } from "../../../context/SaveData.jsx"
 
+import { ContentButton } from "../../ContentButton/ContentButton.jsx"
+
 import './SaveLoader.css'
 
 function SaveLoader() {
@@ -40,9 +42,7 @@ function SaveLoader() {
         <input type="file" id="fileInput" accept=".es3" onChange={handleSaveChange} className="save-loader-input"/>
       </label>
       {saveData &&
-        <button className="download" onClick={DownloadSave}>
-          Download Modified Save
-        </button>
+        <ContentButton className="download" onClickFunc={DownloadSave} label="Download Modified Save"/>
       }
     </section>
   )

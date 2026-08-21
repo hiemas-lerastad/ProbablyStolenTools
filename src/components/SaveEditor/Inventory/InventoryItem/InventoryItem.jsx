@@ -2,6 +2,7 @@ import { useContext, useState, useEffect } from "react";
 
 import { getCustomNameTag } from "../../../../utilities/ItemHelpers.js"
 import { IconButton } from "../../../IconButton/IconButton.jsx"
+import { ContentButton } from "../../../ContentButton/ContentButton.jsx"
 
 import "./InventoryItem.css"
 
@@ -42,8 +43,8 @@ function InventoryItem({ index, item, className = "", onSelectFunc, onDuplicateF
       <td className="inventory-item-cell inventory-item-cell-uuid">{item.uuid}</td>
       <td className="inventory-item-cell inventory-item-cell-uniqueid">{item.uniqueId}</td>
       <td className="inventory-item-cell inventory-item-cell-actions">
-        <button onClick={handleDuplicate}>Duplicate</button>
-        <button onClick={handleDelete}>Delete</button>
+        <ContentButton onClickFunc={handleDuplicate} label="Duplicate" />
+        <ContentButton onClickFunc={handleDelete} label="Delete" />
       </td>
     </tr>
   );

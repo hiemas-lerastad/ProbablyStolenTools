@@ -1,0 +1,23 @@
+.content-input {
+  border: 2px solid #c1604a;
+  color: #8a3327;
+  background: #cdb87c;
+  cursor: pointer;
+}
+
+.content-input:hover,
+.content-input:focus {
+  background: #ecdca6;
+}
+
+.details-input {
+  border-color: #126980;
+  color: #42A2AA;
+  background: #292234;
+}
+
+.details-input:hover,
+.details-input:focus {
+  background: #292234;
+  border-color: #42A2AA;
+}

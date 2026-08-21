@@ -1,6 +1,9 @@
 import { useContext, useState, useEffect } from "react";
 
 import { InfoCard } from "../../../InfoCard/InfoCard.jsx"
+import { ContentInput } from "../../../ContentInput/ContentInput.jsx"
+import { ContentButton } from "../../../ContentButton/ContentButton.jsx"
+import { IconButton } from "../../../IconButton/IconButton.jsx"
 
 import { SaveDataContext } from "../../../../context/SaveData.jsx"
 import { EDITABLE_FIELDS } from "../../../../constants.js"
@@ -26,9 +29,10 @@ function EditableField({label, value, type, onValueChange, onDeletePressed}) {
   return (
     <label className="editable-section-field">
       <span>{label}</span>
-      <input type={type} value={value} onChange={handleValueChange}/>
+      <ContentInput type={type} value={value} onChangeFunc={handleValueChange} className="details-input"/>
       {onDeletePressed &&
-        <button onClick={handleDeletePressed}>X</button>
+        // <button onClick={handleDeletePressed}>X</button>
+      <IconButton onClickFunc={handleDeletePressed} iconName="close"tag="button" />
       }
     </label>
   );
@@ -139,8 +143,8 @@ function InventoryItemDetailsForm({item, index, invKey, handleClose}) {
           {tagsFields}
         </div>
         <div className="editable-section-footer">
-          <input type="text" value={newTagName} placeholder="Tag name" onChange={e => setNewTagName(e.currentTarget.value)}/>
-          <button onClick={handleAddTag}>Add Tag</button>
+          <ContentInput type="text" value={newTagName} placeholder="Tag name" onChangeFunc={e => setNewTagName(e.currentTarget.value)} name="add-new-tag" className="details-input"/>
+          <ContentButton onClickFunc={handleAddTag} label="Add Tag" className="details-button"/>
         </div>
       </div>
     </InfoCard>

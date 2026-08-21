@@ -4,13 +4,16 @@ import '../App.css'
 
 import { SaveDataContext, SaveDataProvider } from "../context/SaveData.jsx"
 
+import { ContentPanel } from "../components/ContentPanel/ContentPanel.jsx"
+
 import { IconButton } from "../components/IconButton/IconButton.jsx"
 import { SaveLoader } from "../components/SaveEditor/SaveLoader/SaveLoader.jsx"
 import { FilterBar } from "../components/SaveEditor/Inventory/FilterBar/FilterBar.jsx"
 import { InventoryItemList } from "../components/SaveEditor/Inventory/InventoryItemList/InventoryItemList.jsx"
-import { INV_KEYS } from "../constants.js"
+import { StatsEditor } from "../components/SaveEditor/StatsEditor/StatsEditor.jsx"
 
-import diagonalImg from "../assets/Diagonal.png"
+
+import { INV_KEYS } from "../constants.js"
 
 function Main(props) {
   const {saveData, setSaveData} = useContext(SaveDataContext);
@@ -25,37 +28,25 @@ function Main(props) {
     setFilterValue(value)
   }
 
+  const nav = (<IconButton onClickFunc={() => {}} iconName="home" className="main-nav-home" tag="a" href="/ProbablyStolenTools/" />)
+
+  const header = (
+    <>
+      <SaveLoader />
+      { saveData &&
+        <StatsEditor />
+      }
+    </>)
+
   return (
-    <div className="main">
-      <div className="main-nav">
-        <IconButton onClickFunc={() => {}} iconName="home" className="main-nav-home" tag="a" href="/ProbablyStolenTools/" />
-      </div>
-      <div className="main-inner">
-        <div className="main-title-row">
-          <img src={diagonalImg}  className="main-title-diagonal"/>
-          <h1 className="main-title">
-            SAVE EDITOR
-          </h1>
-          <img src={diagonalImg}  className="main-title-diagonal main-title-diagonal-right"/>
-        </div>
-        <div className="main-header">
-          <SaveLoader />
-          {saveData &&
-            <FilterBar onInventorySelected={handleInventoryChange} onInventoryFiltered={handleFilterChange}/>
-          }
-          <div className="main-header-separator">
-            <img src={diagonalImg}  className="main-title-diagonal"/>
-            <div className="main-header-separator-body"></div>
-            <img src={diagonalImg}  className="main-title-diagonal main-title-diagonal-right"/>
-          </div>
-        </div>
-        <div className="main-content">
-          {saveData &&
-            <InventoryItemList filter={filterValue} selectedInvKey={activeInventory} />
-          }
-        </div>
-      </div>
-    </div>
+    <ContentPanel title="SAVE EDITOR" nav={nav} header={header}>
+      {saveData &&
+        <>
+          <FilterBar onInventorySelected={handleInventoryChange} onInventoryFiltered={handleFilterChange}/>
+          <InventoryItemList filter={filterValue} selectedInvKey={activeInventory} />
+        </>
+      }
+    </ContentPanel>
   );
 }
 

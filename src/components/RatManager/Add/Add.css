@@ -22,3 +22,8 @@
 .add-form-input-name {
   width: auto;
 }
+
+.add-buttons {
+  display: flex;
+  gap: 4px;
+}

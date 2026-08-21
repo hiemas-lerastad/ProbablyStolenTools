@@ -1,21 +1,16 @@
-.save-loader {
+.filter-bar {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: flex-start;
   align-items: flex-start;
   gap: 8px;
-  padding: 8px;
+  margin-bottom: 8px;
 }
 
-.save-loader-label,
-.save-loader-input {
-  cursor: pointer;
-}
-
-.save-loader-input::file-selector-button {
+.filter-bar-input {
   border: 4px solid #c1604a;
   color: #8a3327;
-  background: #ecdca6;
+  background: #cdb87c;
   cursor: pointer;
 
   clip-path: polygon(
@@ -34,7 +29,7 @@
   );
 }
 
-.save-loader-input:hover::file-selector-button {
-  color: #ecdca6;
-  background: #c1604a;
+.filter-bar-input:hover,
+.filter-bar-input:focus {
+  background: #ecdca6;
 }
