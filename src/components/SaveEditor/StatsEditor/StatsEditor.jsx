@@ -10,7 +10,7 @@ import "./StatsEditor.css"
 function EditableField({label, value, type, onValueChange}) {
   function handleValueChange(e) {
     if (onValueChange) {
-      onValueChange(label, type === "bool" ? e.currentTarget.checked : e.currentTarget.value)
+      onValueChange(label, type === "checkbox" ? e.currentTarget.checked : e.currentTarget.value)
     }
   }
 
