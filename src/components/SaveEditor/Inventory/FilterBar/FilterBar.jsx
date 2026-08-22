@@ -13,7 +13,7 @@ function DropdownOption({index,value, name}) {
   );
 }
 
-function FilterBar({ onInventorySelected, onInventoryFiltered }) {
+function FilterBar({ selectedInvKey, onInventorySelected, onInventoryFiltered }) {
   const {saveData, setSaveData} = useContext(SaveDataContext);
 
   const inventories = Object.keys(saveData.invLineIndexes)
@@ -44,7 +44,7 @@ function FilterBar({ onInventorySelected, onInventoryFiltered }) {
     <div className="filter-bar">
       <label>
         <span>Inventories: </span>
-        <ContentInput tag="select" onChangeFunc={handleInventoryChange}>
+        <ContentInput tag="select" value={selectedInvKey} onChangeFunc={handleInventoryChange}>
           {inventorySelectors}
         </ContentInput>
       </label>

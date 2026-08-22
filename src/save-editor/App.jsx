@@ -86,7 +86,7 @@ function Main(props) {
           }
           { inventoryExpanded ? 
             <InfoCard title="Inventory" enableClose={true} closeFunc={toggleInventory} className="content-card">
-              <FilterBar onInventorySelected={handleInventoryChange} onInventoryFiltered={handleFilterChange}/>
+              <FilterBar selectedInvKey={activeInventory} onInventorySelected={handleInventoryChange} onInventoryFiltered={handleFilterChange}/>
               <InventoryItemList filter={filterValue} selectedInvKey={activeInventory} />
             </InfoCard>
             :

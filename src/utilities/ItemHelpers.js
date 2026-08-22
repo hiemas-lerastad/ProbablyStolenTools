@@ -97,9 +97,9 @@ function buildNewSaveItem(item, newIdx, newUniqueId) {
     _keys: item._keys || [],
     _values: item._values || [],
     uuid: newIdx,
-    uniqueId: String(newUniqueId),
-    childItems: item.childItems || [],
-    childItemInventoryNode: item.childItemInventoryNode || [],
+    uniqueId: newUniqueId,
+    childItems: [],
+    childItemInventoryNode: [],
   };
 }
 
@@ -114,9 +114,6 @@ function addChildItemFromRaw(saveData, invKey, parentIdx, rawJson) {
   const newUniqueId = saveData.currentUniqueId + 1;
   const newItem = buildNewSaveItem(item, newIdx, newUniqueId);
 
-  // childItemInventoryNode is a parallel array to childItems that must stay
-  // the same length, or the game silently ignores anything past its end.
-  // Repair it first in case an earlier bug (or manual edit) left it short.
   const padValue = parent.childItemInventoryNode.length ? parent.childItemInventoryNode[0] : 1;
   const paddedNode = [...parent.childItemInventoryNode];
   while (paddedNode.length < parent.childItems.length) paddedNode.push(padValue);
@@ -136,24 +133,6 @@ function addChildItemFromRaw(saveData, invKey, parentIdx, rawJson) {
     inventories: {
       ...saveData.inventories,
       [invKey]: { ...inv, saveItems: newSaveItems },
-    },
-  };
-}
-
-function addRootItemFromRaw(saveData, invKey, rawJson) {
-  const item = parseRawItem(rawJson);
-
-  const inv = saveData.inventories[invKey];
-  const newIdx = inv.saveItems.length;
-  const newUniqueId = saveData.currentUniqueId + 1;
-  const newItem = buildNewSaveItem(item, newIdx, newUniqueId);
-
-  return {
-    ...saveData,
-    currentUniqueId: newUniqueId,
-    inventories: {
-      ...saveData.inventories,
-      [invKey]: { ...inv, saveItems: [...inv.saveItems, newItem] },
     },
   };
 }
@@ -233,4 +212,4 @@ function removeSaveItem(saveData, invKey, itemIdx) {
   };
 }
 
-export { getTagValue, getCustomNameTag, setTagValueFromInput, makeTag, addItemTag, removeItemTag, addChildItemFromRaw, addRootItemFromRaw, duplicateItem, removeSaveItem };
+export { getTagValue, getCustomNameTag, setTagValueFromInput, makeTag, addItemTag, removeItemTag, addChildItemFromRaw, duplicateItem, removeSaveItem };

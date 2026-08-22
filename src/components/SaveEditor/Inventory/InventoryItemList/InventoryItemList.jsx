@@ -8,7 +8,7 @@ import { ContentInput } from "../../../ContentInput/ContentInput.jsx"
 import { ContentButton } from "../../../ContentButton/ContentButton.jsx"
 
 import { INV_KEYS } from "../../../../constants.js"
-import { getCustomNameTag, addChildItemFromRaw, addRootItemFromRaw, duplicateItem, removeSaveItem } from "../../../../utilities/ItemHelpers.js"
+import { getCustomNameTag, addChildItemFromRaw, duplicateItem, removeSaveItem } from "../../../../utilities/ItemHelpers.js"
 
 import "./InventoryItemList.css"
 
@@ -53,19 +53,22 @@ function InventoryItemList({selectedInvKey, filter = "", className = ""}) {
   function handleAddRawItem() {
     setRawError("")
     try {
-      setSaveData(prev => rawParentIdx === "root"
-        ? addRootItemFromRaw(prev, selectedInvKey, rawJson)
-        : addChildItemFromRaw(prev, selectedInvKey, parseInt(rawParentIdx, 10), rawJson));
+      setSaveData(prev => addChildItemFromRaw(prev, selectedInvKey, parseInt(rawParentIdx, 10), rawJson));
       setRawJson("")
     } catch (err) {
       setRawError(err.message)
     }
   }
 
+  // Any item can hold children in this save format - CONTAINER_TAG is a
+  // gameplay tag, not a structural requirement, and plenty of valid parents
+  // (the root inventory bags in particular) don't have it. Items added
+  // without a parent link never get picked up by the game, so every raw
+  // item needs one of these as its target.
   var containerOptions = []
   if (itemsData) {
     itemsData.forEach((it, i) => {
-      if (it._keys.includes("CONTAINER_TAG")) containerOptions.push({ index: i, item: it });
+      containerOptions.push({ index: i, item: it });
     })
   }
 
@@ -98,8 +101,7 @@ function InventoryItemList({selectedInvKey, filter = "", className = ""}) {
       </table>
       <div className="inventory-item-raw-add">
         <ContentInput tag="select" value={rawParentIdx} onChangeFunc={e => setRawParentIdx(e.currentTarget.value)} >
-          <option value="" disabled>Select container...</option>
-          <option value="root">Selected inventory (no container)</option>
+          <option value="" disabled>Select parent item...</option>
           {containerOptions.map(({index, item}) => (
             <option key={index} value={index}>[{index}] {item.identifier} ({item.name})</option>
           ))}
