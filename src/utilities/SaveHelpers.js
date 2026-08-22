@@ -1,7 +1,7 @@
 import { INV_KEYS } from "../constants.js";
 import { unescapeJsonString } from "./MiscHelpers.js";
 
-const PLAYER_STORE_NESTED_FIELDS = ["storeReputations", "healthData", "secData"];
+const PLAYER_STORE_NESTED_FIELDS = ["storeReputations", "healthData", "secData", "savedItemFeatureList"];
 
 // Matches a "key" : value line whose value is a single scalar (string, number,
 // bool or null) that fits entirely on one line - i.e. a direct, non-nested

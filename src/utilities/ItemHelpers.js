@@ -164,12 +164,26 @@ function duplicateItem(saveData, invKey, itemIdx) {
     };
   }
 
+  // Some items (e.g. injectors with a genuine/counterfeit condition) carry
+  // extra state in playerStore.savedItemFeatureList, keyed by the item's
+  // uniqueId rather than its uuid/array position. A duplicate needs its own
+  // copy of any such entry, or it'll silently fall back to default behavior
+  // in-game despite looking identical to the original in the inventory.
+  const existingFeatures = saveData.playerStore.savedItemFeatureList || [];
+  const duplicatedFeatures = existingFeatures
+    .filter(feature => feature.parentItemUniqueId === original.uniqueId)
+    .map(feature => ({ ...JSON.parse(JSON.stringify(feature)), parentItemUniqueId: newUniqueId }));
+
   return {
     ...saveData,
     currentUniqueId: newUniqueId,
     inventories: {
       ...saveData.inventories,
       [invKey]: { ...inv, saveItems: newSaveItems },
+    },
+    playerStore: {
+      ...saveData.playerStore,
+      savedItemFeatureList: [...existingFeatures, ...duplicatedFeatures],
     },
   };
 }
@@ -179,7 +193,8 @@ function duplicateItem(saveData, invKey, itemIdx) {
 // other item's childItems references to match.
 function removeSaveItem(saveData, invKey, itemIdx) {
   const inv = saveData.inventories[invKey];
-  if (!inv.saveItems[itemIdx]) throw new Error("Invalid item index");
+  const removedItem = inv.saveItems[itemIdx];
+  if (!removedItem) throw new Error("Invalid item index");
 
   const remapIndex = (oldIdx) => oldIdx > itemIdx ? oldIdx - 1 : oldIdx;
 
@@ -203,11 +218,20 @@ function removeSaveItem(saveData, invKey, itemIdx) {
       };
     });
 
+  // Drop any savedItemFeatureList entries that referenced the removed item -
+  // see duplicateItem for why this list exists and how it's keyed.
+  const remainingFeatures = (saveData.playerStore.savedItemFeatureList || [])
+    .filter(feature => feature.parentItemUniqueId !== removedItem.uniqueId);
+
   return {
     ...saveData,
     inventories: {
       ...saveData.inventories,
       [invKey]: { ...inv, saveItems: newSaveItems },
+    },
+    playerStore: {
+      ...saveData.playerStore,
+      savedItemFeatureList: remainingFeatures,
     },
   };
 }
