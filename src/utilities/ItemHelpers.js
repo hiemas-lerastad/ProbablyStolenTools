@@ -1,4 +1,4 @@
-import { REQUIRED_ITEM_FIELDS } from "../constants.js"
+import { REQUIRED_ITEM_FIELDS, FEATURE_FIELDS, FEATURE_CONDITION_FIELDS } from "../constants.js"
 
 function getTagValue(tag) {
   return tag.valueBool || tag.valueLong || tag.valueDouble || tag.valueInt || tag.valueFloat || tag.internalValueString || null;
@@ -91,6 +91,29 @@ function parseRawItem(rawJson) {
   return item;
 }
 
+// Deep-clones each feature entry and repoints it at newUniqueId - shared by
+// duplicateItem (which looks entries up by the original's uniqueId) and
+// addChildItemFromRaw (which takes them straight from the raw JSON's
+// embedded _savedItemFeatures, see getItemSavedFeatures/embedSavedFeatures).
+function remapFeatureIds(features, newUniqueId) {
+  return features.map(feature => ({ ...JSON.parse(JSON.stringify(feature)), parentItemUniqueId: newUniqueId }));
+}
+
+// Looks up an item's playerStore.savedItemFeatureList entries by uniqueId -
+// used to embed them into copied item JSON (see InventoryItem's Copy JSON).
+function getItemSavedFeatures(saveData, item) {
+  return (saveData.playerStore.savedItemFeatureList || [])
+    .filter(feature => feature.parentItemUniqueId === item.uniqueId);
+}
+
+// Embeds an item's saved features directly in its JSON so copy/paste (via
+// the raw-JSON add form) carries them along - addChildItemFromRaw reads this
+// back out and re-registers them against the newly assigned uniqueId.
+function embedSavedFeatures(saveData, item) {
+  const features = getItemSavedFeatures(saveData, item);
+  return features.length ? { ...item, _savedItemFeatures: features } : item;
+}
+
 function buildNewSaveItem(item, newIdx, newUniqueId) {
   return {
     ...item,
@@ -105,6 +128,10 @@ function buildNewSaveItem(item, newIdx, newUniqueId) {
 
 function addChildItemFromRaw(saveData, invKey, parentIdx, rawJson) {
   const item = parseRawItem(rawJson);
+  // _savedItemFeatures is our own metadata (see embedSavedFeatures), not a
+  // real item field - pull it off before the item gets stored.
+  const embeddedFeatures = item._savedItemFeatures || [];
+  delete item._savedItemFeatures;
 
   const inv = saveData.inventories[invKey];
   const parent = inv.saveItems[parentIdx];
@@ -127,12 +154,19 @@ function addChildItemFromRaw(saveData, invKey, parentIdx, rawJson) {
   const newSaveItems = [...inv.saveItems, newItem];
   newSaveItems[parentIdx] = newParent;
 
+  const newFeatures = remapFeatureIds(embeddedFeatures, newUniqueId);
+  const existingFeatures = saveData.playerStore.savedItemFeatureList || [];
+
   return {
     ...saveData,
     currentUniqueId: newUniqueId,
     inventories: {
       ...saveData.inventories,
       [invKey]: { ...inv, saveItems: newSaveItems },
+    },
+    playerStore: {
+      ...saveData.playerStore,
+      savedItemFeatureList: [...existingFeatures, ...newFeatures],
     },
   };
 }
@@ -170,9 +204,7 @@ function duplicateItem(saveData, invKey, itemIdx) {
   // copy of any such entry, or it'll silently fall back to default behavior
   // in-game despite looking identical to the original in the inventory.
   const existingFeatures = saveData.playerStore.savedItemFeatureList || [];
-  const duplicatedFeatures = existingFeatures
-    .filter(feature => feature.parentItemUniqueId === original.uniqueId)
-    .map(feature => ({ ...JSON.parse(JSON.stringify(feature)), parentItemUniqueId: newUniqueId }));
+  const duplicatedFeatures = remapFeatureIds(getItemSavedFeatures(saveData, original), newUniqueId);
 
   return {
     ...saveData,
@@ -236,4 +268,56 @@ function removeSaveItem(saveData, invKey, itemIdx) {
   };
 }
 
-export { getTagValue, getCustomNameTag, setTagValueFromInput, makeTag, addItemTag, removeItemTag, addChildItemFromRaw, duplicateItem, removeSaveItem };
+function updateSavedItemFeature(saveData, featureIndex, updater) {
+  const savedItemFeatureList = (saveData.playerStore.savedItemFeatureList || [])
+    .map((feature, i) => i === featureIndex ? updater(feature) : feature);
+  return { ...saveData, playerStore: { ...saveData.playerStore, savedItemFeatureList } };
+}
+
+function removeSavedItemFeature(saveData, featureIndex) {
+  const savedItemFeatureList = (saveData.playerStore.savedItemFeatureList || [])
+    .filter((_, i) => i !== featureIndex);
+  return { ...saveData, playerStore: { ...saveData.playerStore, savedItemFeatureList } };
+}
+
+function duplicateSavedItemFeature(saveData, featureIndex) {
+  const list = saveData.playerStore.savedItemFeatureList || [];
+  const original = list[featureIndex];
+  if (!original) throw new Error("Invalid feature index");
+
+  const copy = JSON.parse(JSON.stringify(original));
+  return { ...saveData, playerStore: { ...saveData.playerStore, savedItemFeatureList: [...list, copy] } };
+}
+
+function defaultValueForType(type) {
+  if (type === "number") return 0;
+  if (type === "checkbox") return false;
+  return "";
+}
+
+// Built from FEATURE_FIELDS/FEATURE_CONDITION_FIELDS rather than a hardcoded
+// object, so a blank entry always has exactly the fields the editor knows
+// how to display - add a field to those lists and it shows up here too.
+function createBlankSavedItemFeature() {
+  const feature = {};
+  for (const [field, type] of FEATURE_FIELDS) feature[field] = defaultValueForType(type);
+
+  for (const conditionKey of ["fakeCondition", "realCondition"]) {
+    const condition = {};
+    for (const [field, type] of FEATURE_CONDITION_FIELDS) condition[field] = defaultValueForType(type);
+    feature[conditionKey] = condition;
+  }
+
+  return feature;
+}
+
+function addBlankSavedItemFeature(saveData) {
+  const list = saveData.playerStore.savedItemFeatureList || [];
+  return { ...saveData, playerStore: { ...saveData.playerStore, savedItemFeatureList: [...list, createBlankSavedItemFeature()] } };
+}
+
+export {
+  getTagValue, getCustomNameTag, setTagValueFromInput, makeTag, addItemTag, removeItemTag,
+  addChildItemFromRaw, duplicateItem, removeSaveItem, embedSavedFeatures,
+  updateSavedItemFeature, removeSavedItemFeature, duplicateSavedItemFeature, addBlankSavedItemFeature,
+};

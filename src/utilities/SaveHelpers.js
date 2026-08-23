@@ -1,28 +1,16 @@
 import { INV_KEYS } from "../constants.js";
 import { unescapeJsonString } from "./MiscHelpers.js";
 
-const PLAYER_STORE_NESTED_FIELDS = ["storeReputations", "healthData", "secData", "savedItemFeatureList"];
+const PLAYER_STORE_NESTED_FIELDS = ["storeReputations", "healthData", "secData", "savedItemFeatureList", "storeClientManager"];
 
-// Matches a "key" : value line whose value is a single scalar (string, number,
-// bool or null) that fits entirely on one line - i.e. a direct, non-nested
-// field of whatever object we're currently scanning through.
 const SCALAR_FIELD_RE = /^\s*"([^"]+)"\s*:\s*(true|false|null|-?\d+(?:\.\d+)?|"(?:[^"\\]|\\.)*")\s*,?\s*$/;
 
-// Depth is tracked purely by counting brace/bracket characters per line, not
-// by actually parsing JSON - cheap, and works even through the file's non-JSON
-// bits (unquoted numeric keys in PhoneClientDict etc.) since those still open
-// and close braces normally. This only breaks if a string value itself
-// contains a literal { } [ ] character, which doesn't happen anywhere in the
-// known save format.
 function braceDelta(line) {
   const opens = (line.match(/[{[]/g) || []).length;
   const closes = (line.match(/[}\]]/g) || []).length;
   return opens - closes;
 }
 
-// Scans the direct (depth-1) children of the object whose opening line is
-// `objectOpenIndex`, collecting every scalar "key": value field found there.
-// Nested objects/arrays are skipped over (depth-tracked) rather than parsed.
 function scanScalarFields(lines, objectOpenIndex) {
   const fields = {};
   const lineIndexes = {};
@@ -45,8 +33,6 @@ function scanScalarFields(lines, objectOpenIndex) {
   return { fields, lineIndexes };
 }
 
-// Finds the line opening `"childKey" : {` as a direct child of the object
-// opened at `parentOpenIndex`, returning its index (or -1 if not found).
 function findChildObjectStart(lines, parentOpenIndex, childKey) {
   const re = new RegExp(`^\\s*"${childKey}"\\s*:\\s*\\{\\s*$`);
   let depth = 0;
@@ -62,11 +48,8 @@ function findChildObjectStart(lines, parentOpenIndex, childKey) {
   return -1;
 }
 
-// Finds the full [start, end] line range (both inclusive) of a direct child
-// "childKey" : { ... } or "childKey" : [ ... ] block - i.e. from its opening
-// bracket down to the line where that same bracket closes.
 function findChildBlockRange(lines, parentOpenIndex, childKey) {
-  const openRe = new RegExp(`^\\s*"${childKey}"\\s*:\\s*[{[]\\s*$`);
+  const openRe = new RegExp(`^\\s*"${childKey}"\\s*:\\s*[{[]`);
   let depth = 0;
 
   for (let i = parentOpenIndex; i < lines.length; i++) {
@@ -87,12 +70,6 @@ function findChildBlockRange(lines, parentOpenIndex, childKey) {
   return null;
 }
 
-// Extracts a nested object/array field as real parsed JSON, along with the
-// line range it occupies so it can be written back later. Unlike the
-// inventories (JSON-encoded as an escaped string), these blocks are inline,
-// multi-line JSON - so editing one and collapsing it to a single line on save
-// changes the file's total line count, which is why callers must apply edits
-// bottom-up (see serializeSave).
 function extractJsonBlock(lines, parentOpenIndex, childKey) {
   const range = findChildBlockRange(lines, parentOpenIndex, childKey);
   if (!range) return null;
@@ -105,11 +82,6 @@ function extractJsonBlock(lines, parentOpenIndex, childKey) {
   return { value: JSON.parse(trimmed), start, end, hadTrailingComma: trimmed.length !== text.length };
 }
 
-// Scans one object's direct fields into a flat editable `fields` map: plain
-// scalars are captured automatically, and any key named in `nestedKeys` is
-// additionally captured as a parsed object/array (see extractJsonBlock).
-// `scalarLineIndexes`/`blockRanges` record where each came from so
-// serializeSave can write edits back to the right place.
 function scanObjectFields(lines, objectOpenIndex, { excludeScalarKeys = [], nestedKeys = [] } = {}) {
   const scanned = scanScalarFields(lines, objectOpenIndex);
   const excluded = new Set(excludeScalarKeys);
@@ -167,9 +139,6 @@ function parseSave(text) {
 
   const excludedScalarKeys = [...INV_KEYS, "currentUniqueId"];
 
-  // playerStore.value and storeStation.value hold their fields inline as
-  // real (if partially non-standard-JSON) nested objects, unlike the
-  // inventories which are JSON-encoded strings.
   let playerStore = {};
   let playerStoreLineIndexes = {};
   let playerStoreBlockRanges = {};
@@ -220,13 +189,6 @@ function serializeBlockLine(originalStartLine, value, hadTrailingComma) {
 }
 
 function serializeSave(state) {
-  // Every edit is recorded as a [start, end] line range (inclusive) plus the
-  // replacement line(s). Scalar edits replace exactly one line with one line,
-  // so they never shift anything. Block edits collapse a multi-line
-  // object/array down to one line, which DOES shift every line below it -
-  // so all edits are applied via splice from the bottom of the file upward,
-  // meaning an edit is always applied while every index above it is still
-  // the one recorded at parse time.
   const edits = [];
 
   edits.push({

@@ -66,6 +66,22 @@ const PERK_FIELDS = [
   ["isUnlocked", "checkbox"], ["isAlwaysActive", "checkbox"],
 ];
 
+const FEATURE_FIELDS = [
+  ["featureType", "number"], ["valueStage", "number"], ["parentItemUniqueId", "number"],
+  ["publicDisplay", "text"], ["actualDisplay", "text"], ["removedByTool", "text"],
+  ["valueModifier", "number"], ["initiallyShown", "checkbox"], ["isFeatureExposed", "checkbox"],
+  ["isExposing", "checkbox"], ["isFeatureDiscovered", "checkbox"], ["useCondition", "checkbox"],
+  ["usePreExposeValue", "checkbox"], ["preExposeValueModifier", "number"], ["isExposable", "checkbox"],
+  ["isPublicHidden", "checkbox"], ["customIntValue1", "number"], ["isDisabled", "checkbox"],
+  ["identifier", "text"], ["category", "text"], ["isFeatureMatch", "checkbox"],
+];
+
+const FEATURE_CONDITION_FIELDS = [
+  ["display", "text"], ["identifier", "text"], ["modValue", "number"], ["modValueDisplay", "number"],
+  ["isTransformative", "checkbox"], ["category", "text"], ["hiddenAsPublic", "checkbox"],
+  ["customValue", "number"], ["onActivateActionId", "text"], ["compareValue", "number"],
+];
+
 const POSITION_FIELDS = [
   ["x", "<minX>k__BackingField"],
   ["y", "<minY>k__BackingField"],
@@ -85,5 +101,7 @@ export {
   ADVANCED_FIELDS,
   REPUTATION_FIELDS,
   PERK_FIELDS,
+  FEATURE_FIELDS,
+  FEATURE_CONDITION_FIELDS,
   POSITION_FIELDS
 };

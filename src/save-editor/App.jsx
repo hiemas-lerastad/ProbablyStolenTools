@@ -13,6 +13,7 @@ import { FilterBar } from "../components/SaveEditor/Inventory/FilterBar/FilterBa
 import { InventoryItemList } from "../components/SaveEditor/Inventory/InventoryItemList/InventoryItemList.jsx"
 import { PropertyEditor } from "../components/SaveEditor/PropertyEditor/PropertyEditor.jsx"
 import { ReputationEditor } from "../components/SaveEditor/ReputationEditor/ReputationEditor.jsx"
+import { AdvancedEditor } from "../components/SaveEditor/AdvancedEditor/AdvancedEditor.jsx"
 
 
 import { INV_KEYS } from "../constants.js"
@@ -26,6 +27,7 @@ function Main(props) {
   const [playerExpanded, setPlayerExpanded] = useState(false);
   const [reputationExpanded, setReputationExpanded] = useState(false);
   const [inventoryExpanded, setInventoryExpanded] = useState(false);
+  const [advancedExpanded, setAdvancedExpanded] = useState(false);
 
   function handleInventoryChange(value) {
     setActiveInventory(value)
@@ -49,6 +51,10 @@ function Main(props) {
 
   function toggleReputation() {
     setReputationExpanded(!reputationExpanded)
+  }
+
+  function toggleAdvanced() {
+    setAdvancedExpanded(!advancedExpanded)
   }
 
   const nav = (<IconButton onClickFunc={() => {}} iconName="home" className="main-nav-home" tag="a" href="/ProbablyStolenTools/" />)
@@ -91,6 +97,13 @@ function Main(props) {
             </InfoCard>
             :
             <InfoCard title="Inventory" enableClose={true} closeFunc={toggleInventory} iconName="plus" className="content-card"/>
+          }
+          { advancedExpanded ? 
+            <InfoCard title="Advanced" enableClose={true} closeFunc={toggleAdvanced} className="content-card">
+              <AdvancedEditor />
+            </InfoCard>
+            :
+            <InfoCard title="Advanced" enableClose={true} closeFunc={toggleAdvanced} iconName="plus" className="content-card"/>
           }
         </>
       }

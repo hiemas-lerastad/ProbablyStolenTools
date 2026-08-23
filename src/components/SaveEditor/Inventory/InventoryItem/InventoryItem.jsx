@@ -1,12 +1,15 @@
 import { useContext, useState, useEffect } from "react";
 
-import { getCustomNameTag } from "../../../../utilities/ItemHelpers.js"
+import { getCustomNameTag, embedSavedFeatures } from "../../../../utilities/ItemHelpers.js"
 import { IconButton } from "../../../IconButton/IconButton.jsx"
 import { ContentButton } from "../../../ContentButton/ContentButton.jsx"
+
+import { SaveDataContext } from "../../../../context/SaveData.jsx"
 
 import "./InventoryItem.css"
 
 function InventoryItem({ index, item, className = "", onSelectFunc, onDuplicateFunc, onDeleteFunc }) {
+  const { saveData } = useContext(SaveDataContext);
 
   function handleSelect() {
     if (onSelectFunc) {
@@ -16,7 +19,7 @@ function InventoryItem({ index, item, className = "", onSelectFunc, onDuplicateF
 
   function handleCopyJson(e) {
     e.stopPropagation();
-    navigator.clipboard.writeText(JSON.stringify(item, null, 2));
+    navigator.clipboard.writeText(JSON.stringify(embedSavedFeatures(saveData, item), null, 2));
   }
 
   function handleDuplicate(e) {
