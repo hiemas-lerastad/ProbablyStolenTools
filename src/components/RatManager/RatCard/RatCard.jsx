@@ -1,6 +1,8 @@
 import { useContext, useState, useEffect } from "react";
 
 import { InfoCard } from "../../InfoCard/InfoCard.jsx"
+import { ContentButton } from "../../ContentButton/ContentButton.jsx"
+import { AddMenu } from "../Add/Add.jsx"
 
 import "./RatCard.css"
 
@@ -95,7 +97,8 @@ function getRecommendation(rating) {
   }
 }
 
-function RatCard({data, index, deleteFunc, stats}) {
+function RatCard({data, index, deleteFunc, updateFunc, stats}) {
+  const [editing, setEditing] = useState(false);
   const rating = getRatCardRating(data, stats);
   const recommendation = getRecommendation(rating);
 
@@ -105,8 +108,24 @@ function RatCard({data, index, deleteFunc, stats}) {
     }
   }
 
+  function handleSave(updatedRat) {
+    if (updateFunc) {
+      updateFunc(index, updatedRat)
+    }
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <InfoCard title={`Edit ${data.name}`} enableClose={true} closeFunc={() => setEditing(false)} className="rat-card">
+        <AddMenu initialData={data} onSubmit={handleSave}/>
+      </InfoCard>
+    );
+  }
+
   return (
     <InfoCard title={data.name} enableClose={true} closeFunc={handleDelete} className="rat-card">
+      <ContentButton onClickFunc={() => setEditing(true)} label="Edit" className="rat-card-edit details-button"/>
       <GeneValue data={data} propertyName="growthRate" stats={stats} title={"Growth Rate: "}/>
       <GeneValue data={data} propertyName="expectedLitter" stats={stats} title={"Expected Litter: "}/>
       <GeneValue data={data} propertyName="immunity" stats={stats} title={"Immunity: "}/>

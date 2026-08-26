@@ -80,8 +80,12 @@ function ReccomendationsMenu() {
     setRatData(ratData.filter((_, i) => i !== index))
   }
 
+  function updateCard(index, updatedRat) {
+    setRatData(ratData.map((rat, i) => i === index ? updatedRat : rat))
+  }
+
   for (const [index, rat] of ratData.entries()) {
-    ratCards.push(<RatCard key={index} data={rat} index={index} deleteFunc={deleteCard} stats={stats}/>);
+    ratCards.push(<RatCard key={index} data={rat} index={index} deleteFunc={deleteCard} updateFunc={updateCard} stats={stats}/>);
   }
 
   return (
