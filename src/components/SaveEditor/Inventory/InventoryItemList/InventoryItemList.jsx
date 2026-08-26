@@ -25,8 +25,11 @@ function InventoryItemList({selectedInvKey, filter = "", className = ""}) {
     setDetailIndex(undefined)
   }, [saveData.loadId])
 
+  // Index 0 is always the inventory's root bag (e.g. save_bag in mainInvJSON)
+  // across every managed inventory, so it's the sensible default parent for
+  // a newly-added item rather than forcing a manual pick every time.
   useEffect(() => {
-    setRawParentIdx("")
+    setRawParentIdx(itemsData?.length ? "0" : "")
     setRawError("")
   }, [selectedInvKey, saveData.loadId])
 
