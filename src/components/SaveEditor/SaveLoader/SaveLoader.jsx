@@ -1,13 +1,11 @@
-import { useContext, useState, useEffect } from "react";
+import { useState } from "react";
 import { parseSave, serializeSave } from "../../../utilities/SaveHelpers.js"
-import { SaveDataContext } from "../../../context/SaveData.jsx"
 
 import { ContentButton } from "../../ContentButton/ContentButton.jsx"
 
 import './SaveLoader.css'
 
-function SaveLoader() {
-  const {saveData, setSaveData} = useContext(SaveDataContext);
+function SaveLoader({ onLoad, downloadData }) {
   const [fileName, setFileName] = useState("save.es3");
 
   function handleSaveChange(e) {
@@ -20,12 +18,12 @@ function SaveLoader() {
       const text = new TextDecoder("utf-8").decode(buffer);
       const state = parseSave(text);
 
-      setSaveData({ ...state, loadId: Date.now() })
+      onLoad(state, file.name)
     })
   }
 
   function DownloadSave() {
-    const text = serializeSave(saveData);
+    const text = serializeSave(downloadData);
     const blob = new Blob([new TextEncoder().encode(text)], { type: "application/octet-stream" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -41,7 +39,7 @@ function SaveLoader() {
         Load a save file (save_&lt;slot&gt;.es3):
         <input type="file" id="fileInput" accept=".es3" onChange={handleSaveChange} className="save-loader-input"/>
       </label>
-      {saveData &&
+      {downloadData &&
         <ContentButton className="download" onClickFunc={DownloadSave} label="Download Modified Save"/>
       }
     </section>

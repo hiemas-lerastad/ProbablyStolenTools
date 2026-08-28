@@ -16,8 +16,6 @@ function getAverage(a, b) {
   return (parseFloat(a) + parseFloat(b)) / 2;
 }
 
-// Same field defaults used for a brand-new rat. When editing, initialData
-// takes over instead - see geneDefault/nameDefault.
 const GENE_DEFAULTS = {
   growthRate: "1.0",
   expectedLitter: "3.0",
@@ -31,10 +29,6 @@ function geneDefault(initialData, prop, side) {
   return initialData ? String(initialData[prop][side]) : GENE_DEFAULTS[prop];
 }
 
-// Pass initialData to pre-fill the form for editing an existing rat instead
-// of creating a new one - onSubmit receives the built rat object either way,
-// but only a fresh add appends to ratData/resets the form itself; editing
-// leaves what happens with the result up to the caller (see RatCard).
 function AddMenu({initialData, onSubmit}) {
   const {ratData, setRatData} = useContext(RatDataContext);
 

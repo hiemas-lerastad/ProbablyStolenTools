@@ -91,24 +91,15 @@ function parseRawItem(rawJson) {
   return item;
 }
 
-// Deep-clones each feature entry and repoints it at newUniqueId - shared by
-// duplicateItem (which looks entries up by the original's uniqueId) and
-// addChildItemFromRaw (which takes them straight from the raw JSON's
-// embedded _savedItemFeatures, see getItemSavedFeatures/embedSavedFeatures).
 function remapFeatureIds(features, newUniqueId) {
   return features.map(feature => ({ ...JSON.parse(JSON.stringify(feature)), parentItemUniqueId: newUniqueId }));
 }
 
-// Looks up an item's playerStore.savedItemFeatureList entries by uniqueId -
-// used to embed them into copied item JSON (see InventoryItem's Copy JSON).
 function getItemSavedFeatures(saveData, item) {
   return (saveData.playerStore.savedItemFeatureList || [])
     .filter(feature => feature.parentItemUniqueId === item.uniqueId);
 }
 
-// Embeds an item's saved features directly in its JSON so copy/paste (via
-// the raw-JSON add form) carries them along - addChildItemFromRaw reads this
-// back out and re-registers them against the newly assigned uniqueId.
 function embedSavedFeatures(saveData, item) {
   const features = getItemSavedFeatures(saveData, item);
   return features.length ? { ...item, _savedItemFeatures: features } : item;
@@ -128,8 +119,6 @@ function buildNewSaveItem(item, newIdx, newUniqueId) {
 
 function addChildItemFromRaw(saveData, invKey, parentIdx, rawJson) {
   const item = parseRawItem(rawJson);
-  // _savedItemFeatures is our own metadata (see embedSavedFeatures), not a
-  // real item field - pull it off before the item gets stored.
   const embeddedFeatures = item._savedItemFeatures || [];
   delete item._savedItemFeatures;
 
@@ -177,8 +166,7 @@ function duplicateItem(saveData, invKey, itemIdx) {
   if (!original) throw new Error("Invalid item index");
 
   const copy = JSON.parse(JSON.stringify(original));
-  // The copy doesn't inherit the original's children - they'd otherwise be
-  // claimed by both the original and the duplicate as childItems entries.
+
   copy.childItems = [];
   copy.childItemInventoryNode = [];
 
@@ -198,11 +186,6 @@ function duplicateItem(saveData, invKey, itemIdx) {
     };
   }
 
-  // Some items (e.g. injectors with a genuine/counterfeit condition) carry
-  // extra state in playerStore.savedItemFeatureList, keyed by the item's
-  // uniqueId rather than its uuid/array position. A duplicate needs its own
-  // copy of any such entry, or it'll silently fall back to default behavior
-  // in-game despite looking identical to the original in the inventory.
   const existingFeatures = saveData.playerStore.savedItemFeatureList || [];
   const duplicatedFeatures = remapFeatureIds(getItemSavedFeatures(saveData, original), newUniqueId);
 
@@ -220,9 +203,6 @@ function duplicateItem(saveData, invKey, itemIdx) {
   };
 }
 
-// uuid doubles as an item's array index throughout the save format, so
-// removing an item means reindexing everything after it and rewriting every
-// other item's childItems references to match.
 function removeSaveItem(saveData, invKey, itemIdx) {
   const inv = saveData.inventories[invKey];
   const removedItem = inv.saveItems[itemIdx];
@@ -250,8 +230,6 @@ function removeSaveItem(saveData, invKey, itemIdx) {
       };
     });
 
-  // Drop any savedItemFeatureList entries that referenced the removed item -
-  // see duplicateItem for why this list exists and how it's keyed.
   const remainingFeatures = (saveData.playerStore.savedItemFeatureList || [])
     .filter(feature => feature.parentItemUniqueId !== removedItem.uniqueId);
 
@@ -295,9 +273,6 @@ function defaultValueForType(type) {
   return "";
 }
 
-// Built from FEATURE_FIELDS/FEATURE_CONDITION_FIELDS rather than a hardcoded
-// object, so a blank entry always has exactly the fields the editor knows
-// how to display - add a field to those lists and it shows up here too.
 function createBlankSavedItemFeature() {
   const feature = {};
   for (const [field, type] of FEATURE_FIELDS) feature[field] = defaultValueForType(type);

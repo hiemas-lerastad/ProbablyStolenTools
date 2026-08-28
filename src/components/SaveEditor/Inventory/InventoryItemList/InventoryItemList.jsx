@@ -25,9 +25,6 @@ function InventoryItemList({selectedInvKey, filter = "", className = ""}) {
     setDetailIndex(undefined)
   }, [saveData.loadId])
 
-  // Index 0 is always the inventory's root bag (e.g. save_bag in mainInvJSON)
-  // across every managed inventory, so it's the sensible default parent for
-  // a newly-added item rather than forcing a manual pick every time.
   useEffect(() => {
     setRawParentIdx(itemsData?.length ? "0" : "")
     setRawError("")
@@ -63,11 +60,6 @@ function InventoryItemList({selectedInvKey, filter = "", className = ""}) {
     }
   }
 
-  // Any item can hold children in this save format - CONTAINER_TAG is a
-  // gameplay tag, not a structural requirement, and plenty of valid parents
-  // (the root inventory bags in particular) don't have it. Items added
-  // without a parent link never get picked up by the game, so every raw
-  // item needs one of these as its target.
   var containerOptions = []
   if (itemsData) {
     itemsData.forEach((it, i) => {

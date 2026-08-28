@@ -9,13 +9,25 @@ import { ReccomendationsMenu } from "../components/RatManager/Recommendations/Re
 import { InfoMenu } from "../components/Info/Info.jsx"
 import { IconButton } from "../components/IconButton/IconButton.jsx"
 import { Key } from "../components/RatManager/Key/Key.jsx"
+import { SaveLoader } from "../components/SaveEditor/SaveLoader/SaveLoader.jsx"
+
+import { extractRatsFromSave } from "../utilities/RatHelpers.js"
 
 function Main(props) {
   const [activeTab, setActiveTab] = useState('recommendations')
   const {ratData, setRatData} = useContext(RatDataContext);
 
+  function handleSaveLoaded(state) {
+    setRatData(extractRatsFromSave(state))
+  }
+
   const nav = (<IconButton onClickFunc={() => {}} iconName="home" className="main-nav-home" tag="a" href="/ProbablyStolenTools/" />)
-  const header = (<Key />)
+  const header = (
+    <>
+      <SaveLoader onLoad={handleSaveLoaded} />
+      <Key />
+    </>
+  );
 
   return (
     <ContentPanel title="RAT MANAGER" nav={nav} header={header}>

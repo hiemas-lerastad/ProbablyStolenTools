@@ -9,11 +9,6 @@ function EditableField({label, value, type, onValueChange, onDeletePressed, clas
   const [localValue, setLocalValue] = useState(value);
   const [focused, setFocused] = useState(false);
 
-  // While focused, trust whatever the user is actively typing rather than
-  // the canonical value coming back from saveData - re-parsing a partial
-  // value like "1." can round-trip to "1", and overwriting the live input
-  // with that mid-keystroke makes it impossible to finish typing a decimal.
-  // Only resync once the field loses focus or the value changes externally.
   useEffect(() => {
     if (!focused) setLocalValue(value);
   }, [value, focused]);

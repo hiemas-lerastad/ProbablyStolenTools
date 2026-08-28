@@ -57,11 +57,15 @@ function Main(props) {
     setAdvancedExpanded(!advancedExpanded)
   }
 
+  function handleSaveLoaded(state) {
+    setSaveData({ ...state, loadId: Date.now() })
+  }
+
   const nav = (<IconButton onClickFunc={() => {}} iconName="home" className="main-nav-home" tag="a" href="/ProbablyStolenTools/" />)
 
   const header = (
     <>
-      <SaveLoader />
+      <SaveLoader onLoad={handleSaveLoaded} downloadData={saveData} />
     </>
   );
 

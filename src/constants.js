@@ -66,11 +66,6 @@ const PERK_FIELDS = [
   ["isUnlocked", "checkbox"], ["isAlwaysActive", "checkbox"],
 ];
 
-// The scalar fields on playerStore.storeClientManager. clientTracker,
-// permanentClientTracker, uniqueClientTracker, arrestedClients,
-// possibleRandomWantedClient and wealthHistory are dynamic-keyed
-// dictionaries/arrays rather than a fixed set of fields, so they're edited
-// as raw JSON instead (see StoreClientManagerEditor).
 const STORE_CLIENT_MANAGER_FIELDS = [
   ["isTodayWantedQueued", "checkbox"], ["daySinceWantedWasQueued", "number"],
   ["isAugSpawnHandledToday", "checkbox"], ["daySinceInformationClient", "number"],
