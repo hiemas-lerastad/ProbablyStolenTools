@@ -71,12 +71,12 @@ function GeneValue({data, propertyName, stats, title}) {
   return (
     <div className="rat-card-gene">
     <div className="rat-card-gene-name">{title}</div>
-      <div className={`rat-card-gene-value ${getRatingClasses(getComparisonFlags(geneData.value, propStats.value), invert)}`}>{geneData.value}</div>
+      <div className={`rat-card-gene-value ${getRatingClasses(getComparisonFlags(geneData.value, propStats.value), invert)}`}>{geneData.value.toFixed(2)}</div>
       <div className="rat-card-allele">
         <span className="rat-card-bracket">(</span>
-        <div className={`rat-card-gene-value ${getRatingClasses(getComparisonFlags(geneData.highest, propStats.highest), invert)}`}>{geneData.highest}</div>
+        <div className={`rat-card-gene-value ${getRatingClasses(getComparisonFlags(geneData.highest, propStats.highest), invert)}`}>{geneData.highest.toFixed(2)}</div>
         <span className="rat-card-spacer">{" | "}</span>
-        <div className={`rat-card-gene-value ${getRatingClasses(getComparisonFlags(geneData.lowest, propStats.lowest), invert)}`}>{geneData.lowest}</div>
+        <div className={`rat-card-gene-value ${getRatingClasses(getComparisonFlags(geneData.lowest, propStats.lowest), invert)}`}>{geneData.lowest.toFixed(2)}</div>
         <span className="rat-card-bracket">)</span>
       </div>
     </div>
