@@ -69,7 +69,7 @@ function RatCard({ rat }) {
           {rat.immunity < 25 &&
             <span className="rat-tier-minimum">[Immunocomprimised]</span>
           }
-          {rat.immunity < 50 &&
+          {rat.immunity > 50 &&
             <span className="rat-tier-aboveAverage">[Strong Immunity]</span>
           }
           {rat.diseased &&
