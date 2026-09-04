@@ -1,25 +1,47 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useMemo } from 'react';
 
-const STORAGE_KEY = "ratData";
+import { SaveDataContext } from '../context/SaveData.jsx'
+import { RAT_EXPORT_FIELDS, RAT_GENE_FIELDS, RAT_SCORE_FIELDS, RAT_RECOMMENDATION_FIELDS } from '../utilities/constants.js'
+import { collectAndScoreRats } from '../utilities/RatHelpers.js'
 
-export const RatDataContext = createContext([[], () => []])
+const EMPTY_RATS = { male: [], female: [], all: [] };
+
+export const RatDataContext = createContext({
+  ...EMPTY_RATS,
+  scoreFields: RAT_SCORE_FIELDS,
+  updateScoreTier: () => undefined,
+  recommendationFields: RAT_RECOMMENDATION_FIELDS,
+  updateRecommendationField: () => undefined,
+})
 
 export const RatDataProvider = ({children}) => {
-  const [ratData, setRatData] = useState(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+  const { saveData } = useContext(SaveDataContext);
+  const [scoreFields, setScoreFields] = useState(RAT_SCORE_FIELDS);
+  const [recommendationFields, setRecommendationFields] = useState(RAT_RECOMMENDATION_FIELDS);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(ratData));
-  }, [ratData]);
+  const { male, female } = useMemo(() => {
+    if (!saveData) return EMPTY_RATS;
+    return collectAndScoreRats(saveData, RAT_EXPORT_FIELDS, RAT_GENE_FIELDS, scoreFields);
+  }, [saveData, scoreFields]);
+
+  const all = useMemo(() => [...male, ...female], [male, female]);
+
+  function updateScoreTier(statKey, tier, value) {
+    setScoreFields(prev => ({
+      ...prev,
+      [statKey]: { ...prev[statKey], [tier]: Number(value) },
+    }));
+  }
+
+  function updateRecommendationField(tier, field, value) {
+    setRecommendationFields(prev => prev.map(r => r.tier === tier
+      ? { ...r, [field]: field === "threshold" ? Number(value) : value }
+      : r
+    ));
+  }
 
   return (
-    <RatDataContext.Provider value={{ ratData, setRatData }}>
+    <RatDataContext.Provider value={{ male, female, all, scoreFields, updateScoreTier, recommendationFields, updateRecommendationField }}>
       {children}
     </RatDataContext.Provider>
   )

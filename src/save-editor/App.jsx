@@ -1,61 +1,17 @@
 import React, { useState, useContext, useEffect } from 'react';
 
-import '../App.css'
+import "../App.css";
 
 import { SaveDataContext, SaveDataProvider } from "../context/SaveData.jsx"
 
-import { ContentPanel } from "../components/ContentPanel/ContentPanel.jsx"
+import { ContentPanel, InfoPanel, IconButton, SaveHandler, PropertyEditor, ReputationEditor, SchemaEditor, InventoryEditor } from "../components/components.js"
+import { STARTING_PERKS_SCHEMA, ITEM_FEATURE_LIST_SCHEMA, CLIENT_MANAGER_SCHEMA } from "../utilities/constants.js"
 
-import { IconButton } from "../components/IconButton/IconButton.jsx"
-import { InfoCard } from "../components/InfoCard/InfoCard.jsx"
-import { SaveLoader } from "../components/SaveEditor/SaveLoader/SaveLoader.jsx"
-import { FilterBar } from "../components/SaveEditor/Inventory/FilterBar/FilterBar.jsx"
-import { InventoryItemList } from "../components/SaveEditor/Inventory/InventoryItemList/InventoryItemList.jsx"
-import { PropertyEditor } from "../components/SaveEditor/PropertyEditor/PropertyEditor.jsx"
-import { ReputationEditor } from "../components/SaveEditor/ReputationEditor/ReputationEditor.jsx"
-import { AdvancedEditor } from "../components/SaveEditor/AdvancedEditor/AdvancedEditor.jsx"
-
-
-import { INV_KEYS } from "../constants.js"
+const STARTING_PERKS = [STARTING_PERKS_SCHEMA];
+const ITEM_FEATURE_LIST = [ITEM_FEATURE_LIST_SCHEMA];
 
 function Main(props) {
   const {saveData, setSaveData} = useContext(SaveDataContext);
-  const [activeInventory, setActiveInventory] = useState(INV_KEYS[0])
-  const [filterValue, setFilterValue] = useState("");
-
-  const [storeExpanded, setStoreExpanded] = useState(false);
-  const [playerExpanded, setPlayerExpanded] = useState(false);
-  const [reputationExpanded, setReputationExpanded] = useState(false);
-  const [inventoryExpanded, setInventoryExpanded] = useState(false);
-  const [advancedExpanded, setAdvancedExpanded] = useState(false);
-
-  function handleInventoryChange(value) {
-    setActiveInventory(value)
-  }
-
-  function handleFilterChange(value) {
-    setFilterValue(value)
-  }
-
-  function toggleInventory() {
-    setInventoryExpanded(!inventoryExpanded)
-  }
-
-  function toggleStore() {
-    setStoreExpanded(!storeExpanded)
-  }
-
-  function togglePlayer() {
-    setPlayerExpanded(!playerExpanded)
-  }
-
-  function toggleReputation() {
-    setReputationExpanded(!reputationExpanded)
-  }
-
-  function toggleAdvanced() {
-    setAdvancedExpanded(!advancedExpanded)
-  }
 
   function handleSaveLoaded(state) {
     setSaveData({ ...state, loadId: Date.now() })
@@ -65,51 +21,40 @@ function Main(props) {
 
   const header = (
     <>
-      <SaveLoader onLoad={handleSaveLoaded} downloadData={saveData} />
+      <InfoPanel title={"Save Manager"} collapsable={true}>
+        <SaveHandler downloadData={saveData} onLoad={handleSaveLoaded} />
+      </InfoPanel>
     </>
-  );
+  )
 
   return (
-    <ContentPanel title="SAVE EDITOR" nav={nav} header={header}>
+    <ContentPanel title="SAVE EDITOR" header={header} nav={nav}>
       {saveData &&
-        <>
-          { storeExpanded ? 
-            <InfoCard title="Store" enableClose={true} closeFunc={toggleStore} className="content-card">
-              <PropertyEditor propertyName="STORE_FIELDS" />
-            </InfoCard>
-            :
-            <InfoCard title="Store" enableClose={true} closeFunc={toggleStore} iconName="plus" className="content-card"/>
-          }
-          { playerExpanded ? 
-            <InfoCard title="Player" enableClose={true} closeFunc={togglePlayer} className="content-card">
-              <PropertyEditor propertyName="PLAYER_FIELDS" />
-            </InfoCard>
-            :
-            <InfoCard title="Player" enableClose={true} closeFunc={togglePlayer} iconName="plus" className="content-card"/>
-          }
-          { reputationExpanded ? 
-            <InfoCard title="Reputation" enableClose={true} closeFunc={toggleReputation} className="content-card">
-              <ReputationEditor />
-            </InfoCard>
-            :
-            <InfoCard title="Reputation" enableClose={true} closeFunc={toggleReputation} iconName="plus" className="content-card"/>
-          }
-          { inventoryExpanded ? 
-            <InfoCard title="Inventory" enableClose={true} closeFunc={toggleInventory} className="content-card">
-              <FilterBar selectedInvKey={activeInventory} onInventorySelected={handleInventoryChange} onInventoryFiltered={handleFilterChange}/>
-              <InventoryItemList filter={filterValue} selectedInvKey={activeInventory} />
-            </InfoCard>
-            :
-            <InfoCard title="Inventory" enableClose={true} closeFunc={toggleInventory} iconName="plus" className="content-card"/>
-          }
-          { advancedExpanded ? 
-            <InfoCard title="Advanced" enableClose={true} closeFunc={toggleAdvanced} className="content-card">
-              <AdvancedEditor />
-            </InfoCard>
-            :
-            <InfoCard title="Advanced" enableClose={true} closeFunc={toggleAdvanced} iconName="plus" className="content-card"/>
-          }
-        </>
+       <>
+        <InfoPanel title="Store" collapsable={true} collapsedState={true}>
+          <PropertyEditor propertyName="STORE_FIELDS" />
+        </InfoPanel>
+        <InfoPanel title="Player" collapsable={true} collapsedState={true}>
+          <PropertyEditor propertyName="PLAYER_FIELDS" />
+        </InfoPanel>
+        <InfoPanel title="Reputation" collapsable={true} collapsedState={true}>
+          <ReputationEditor />
+        </InfoPanel>
+        <InfoPanel title="Perks" collapsable={true} collapsedState={true}>
+          <SchemaEditor schema={STARTING_PERKS} />
+        </InfoPanel>
+        <InfoPanel title="Inventory" collapsable={true} collapsedState={true}>
+          <InventoryEditor key={saveData.loadId} />
+        </InfoPanel>
+        <InfoPanel title="Advanced" collapsable={true} collapsedState={true}>
+          <InfoPanel title="Item Feature List" collapsable={true} collapsedState={true} className="details-card">
+            <SchemaEditor schema={ITEM_FEATURE_LIST} />
+          </InfoPanel>
+          <InfoPanel title="Client Manager" collapsable={true} collapsedState={true} className="details-card">
+            <SchemaEditor schema={CLIENT_MANAGER_SCHEMA} />
+          </InfoPanel>
+        </InfoPanel>
+       </>
       }
     </ContentPanel>
   );

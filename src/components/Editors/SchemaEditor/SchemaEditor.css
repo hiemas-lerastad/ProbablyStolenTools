@@ -1,0 +1,42 @@
+.schema-editor-fields {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.schema-editor {
+  width: 100%;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.schema-editor-array {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.schema-editor-add {
+  align-self: flex-start;
+}
+
+.schema-editor-dict {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.schema-editor-dict-footer {
+  display: flex;
+  gap: 4px;
+}

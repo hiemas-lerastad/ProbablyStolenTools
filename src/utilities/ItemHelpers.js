@@ -1,13 +1,11 @@
-import { REQUIRED_ITEM_FIELDS, FEATURE_FIELDS, FEATURE_CONDITION_FIELDS } from "../constants.js"
+const REQUIRED_ITEM_FIELDS = [
+  "identifier", "unitCount", "itemShape", "itemModifiedShape", "itemType", "name",
+  "shortDescription", "flavorText", "unitBaseValue", "unitValue", "lateUnitValue",
+  "backupUnitValue", "spriteAtlasPath", "spritePath", "itemTypes",
+];
 
 function getTagValue(tag) {
   return tag.valueBool || tag.valueLong || tag.valueDouble || tag.valueInt || tag.valueFloat || tag.internalValueString || null;
-}
-
-function getCustomNameTag(item) {
-  const idx = item._keys.indexOf("CUSTOM_NAME_TAG");
-  if (idx === -1) return null;
-  return getTagValue(item._values[idx]);
 }
 
 function setTagValueFromInput(tag, str) {
@@ -79,8 +77,22 @@ function removeItemTag(item, identifier) {
   };
 }
 
-function findParentIndex(saveItems, itemIdx) {
-  return saveItems.findIndex(it => Array.isArray(it.childItems) && it.childItems.includes(itemIdx));
+function getItemTag(item, tagName) {
+  const idx = item._keys.indexOf(tagName);
+  if (idx === -1) return null;
+  return getTagValue(item._values[idx]);
+}
+
+function getCustomNameTag(item) {
+  return getItemTag(item, "CUSTOM_NAME_TAG");
+}
+
+function extractItemFields(item, fields) {
+  const record = {};
+  for (const field of fields) {
+    record[field.key] = field.source === "tag" ? getItemTag(item, field.name) : item[field.name];
+  }
+  return record;
 }
 
 function parseRawItem(rawJson) {
@@ -115,6 +127,10 @@ function buildNewSaveItem(item, newIdx, newUniqueId) {
     childItems: [],
     childItemInventoryNode: [],
   };
+}
+
+function findParentIndex(saveItems, itemIdx) {
+  return saveItems.findIndex(it => Array.isArray(it.childItems) && it.childItems.includes(itemIdx));
 }
 
 function addChildItemFromRaw(saveData, invKey, parentIdx, rawJson) {
@@ -246,53 +262,8 @@ function removeSaveItem(saveData, invKey, itemIdx) {
   };
 }
 
-function updateSavedItemFeature(saveData, featureIndex, updater) {
-  const savedItemFeatureList = (saveData.playerStore.savedItemFeatureList || [])
-    .map((feature, i) => i === featureIndex ? updater(feature) : feature);
-  return { ...saveData, playerStore: { ...saveData.playerStore, savedItemFeatureList } };
-}
-
-function removeSavedItemFeature(saveData, featureIndex) {
-  const savedItemFeatureList = (saveData.playerStore.savedItemFeatureList || [])
-    .filter((_, i) => i !== featureIndex);
-  return { ...saveData, playerStore: { ...saveData.playerStore, savedItemFeatureList } };
-}
-
-function duplicateSavedItemFeature(saveData, featureIndex) {
-  const list = saveData.playerStore.savedItemFeatureList || [];
-  const original = list[featureIndex];
-  if (!original) throw new Error("Invalid feature index");
-
-  const copy = JSON.parse(JSON.stringify(original));
-  return { ...saveData, playerStore: { ...saveData.playerStore, savedItemFeatureList: [...list, copy] } };
-}
-
-function defaultValueForType(type) {
-  if (type === "number") return 0;
-  if (type === "checkbox") return false;
-  return "";
-}
-
-function createBlankSavedItemFeature() {
-  const feature = {};
-  for (const [field, type] of FEATURE_FIELDS) feature[field] = defaultValueForType(type);
-
-  for (const conditionKey of ["fakeCondition", "realCondition"]) {
-    const condition = {};
-    for (const [field, type] of FEATURE_CONDITION_FIELDS) condition[field] = defaultValueForType(type);
-    feature[conditionKey] = condition;
-  }
-
-  return feature;
-}
-
-function addBlankSavedItemFeature(saveData) {
-  const list = saveData.playerStore.savedItemFeatureList || [];
-  return { ...saveData, playerStore: { ...saveData.playerStore, savedItemFeatureList: [...list, createBlankSavedItemFeature()] } };
-}
-
 export {
-  getTagValue, getCustomNameTag, setTagValueFromInput, makeTag, addItemTag, removeItemTag,
-  addChildItemFromRaw, duplicateItem, removeSaveItem, embedSavedFeatures,
-  updateSavedItemFeature, removeSavedItemFeature, duplicateSavedItemFeature, addBlankSavedItemFeature,
+  getTagValue, setTagValueFromInput, makeTag, addItemTag, removeItemTag,
+  getItemTag, getCustomNameTag, extractItemFields, findParentIndex,
+  embedSavedFeatures, addChildItemFromRaw, duplicateItem, removeSaveItem,
 };

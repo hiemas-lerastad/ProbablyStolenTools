@@ -1,0 +1,14 @@
+.editable-field {
+  flex-basis: calc(50% - 8px);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 4px;
+}
+
+.editable-section-fields {
+  display: flex;
+  flex-direction: row;
+  gap: 4px 16px;
+  flex-wrap: wrap;
+}

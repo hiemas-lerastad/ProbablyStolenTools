@@ -1,0 +1,33 @@
+.rat-score-fields {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.rat-card-list {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.rat-list-controls {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.rat-recommendation {
+  font-weight: bold;
+  margin-bottom: 4px;
+}

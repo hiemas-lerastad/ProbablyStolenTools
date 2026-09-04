@@ -4,14 +4,6 @@ body,
   min-height: 100vh;
 }
 
-.add-card {
-  width: max-content;
-  min-width: 300px;
-}
-
-.home .home-inner {
-  display: flex;
-  flex-direction: column;
-  width: max-content;
-  gap: 8px;
+* {
+  font-family: "Noto Sans", sans-serif;
 }

@@ -1,134 +1,137 @@
-import { INV_KEYS } from "../constants.js";
-import { unescapeJsonString } from "./MiscHelpers.js";
+import {
+  INV_KEYS,
+  PLAYER_STORE_NESTED_FIELDS,
+  VALID_ESCAPE_CHARS
+} from "./constants.js";
 
-const PLAYER_STORE_NESTED_FIELDS = ["storeReputations", "healthData", "secData", "savedItemFeatureList", "storeClientManager"];
-
-const SCALAR_FIELD_RE = /^\s*"([^"]+)"\s*:\s*(true|false|null|-?\d+(?:\.\d+)?|"(?:[^"\\]|\\.)*")\s*,?\s*$/;
-
-function braceDelta(line) {
-  const opens = (line.match(/[{[]/g) || []).length;
-  const closes = (line.match(/[}\]]/g) || []).length;
-  return opens - closes;
+function isWhitespaceChar(ch) {
+  return ch === " " || ch === "\t" || ch === "\n" || ch === "\r";
 }
 
-function scanScalarFields(lines, objectOpenIndex) {
+function skipWhitespace(text, i) {
+  while (i < text.length && isWhitespaceChar(text[i])) i++;
+  return i;
+}
+
+function sanitizeInvalidEscapes(str) {
+  let result = "";
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === "\\" && i + 1 < str.length) {
+      const next = str[i + 1];
+      result += VALID_ESCAPE_CHARS.has(next) ? str[i] + next : next;
+      i++;
+      continue;
+    }
+    result += str[i];
+  }
+  return result;
+}
+
+function parseJson(str) {
+  return JSON.parse(sanitizeInvalidEscapes(str));
+}
+
+function restoreQuoteEscapes(str) {
+  return str.replace(/[“”]/g, (ch) => "\\" + ch);
+}
+
+function skipString(text, i) {
+  i++;
+  while (i < text.length) {
+    if (text[i] === "\\") { i += 2; continue; }
+    if (text[i] === "\"") return i + 1;
+    i++;
+  }
+  return i;
+}
+
+function skipValue(text, i) {
+  i = skipWhitespace(text, i);
+  const ch = text[i];
+  if (ch === "\"") return skipString(text, i);
+  if (ch === "{" || ch === "[") {
+    let depth = 1;
+    i++;
+    while (i < text.length && depth > 0) {
+      const c = text[i];
+      if (c === "\"") { i = skipString(text, i); continue; }
+      if (c === "{" || c === "[") depth++;
+      else if (c === "}" || c === "]") depth--;
+      i++;
+    }
+    return i;
+  }
+  while (i < text.length && !/[,}\]\s]/.test(text[i])) i++;
+  return i;
+}
+
+function scanChildren(text, openIndex) {
   const fields = {};
-  const lineIndexes = {};
-  let depth = 0;
-
-  for (let i = objectOpenIndex; i < lines.length; i++) {
-    const line = lines[i];
-    if (depth === 1) {
-      const m = line.match(SCALAR_FIELD_RE);
-      if (m) {
-        fields[m[1]] = JSON.parse(m[2]);
-        lineIndexes[m[1]] = i;
-      }
-    }
-
-    depth += braceDelta(line);
-    if (depth <= 0 && i > objectOpenIndex) break;
+  let i = skipWhitespace(text, openIndex + 1);
+  while (i < text.length && text[i] !== "}") {
+    const keyEnd = skipString(text, i);
+    const key = parseJson(text.slice(i, keyEnd));
+    i = skipWhitespace(text, keyEnd);
+    i = skipWhitespace(text, i + 1); // skip ':'
+    const valueStart = i;
+    const valueEnd = skipValue(text, i);
+    fields[key] = { valueStart, valueEnd };
+    i = skipWhitespace(text, valueEnd);
+    if (text[i] === ",") i = skipWhitespace(text, i + 1);
   }
-
-  return { fields, lineIndexes };
+  return fields;
 }
 
-function findChildObjectStart(lines, parentOpenIndex, childKey) {
-  const re = new RegExp(`^\\s*"${childKey}"\\s*:\\s*\\{\\s*$`);
-  let depth = 0;
-
-  for (let i = parentOpenIndex; i < lines.length; i++) {
-    const line = lines[i];
-    if (depth === 1 && re.test(line)) return i;
-
-    depth += braceDelta(line);
-    if (depth <= 0 && i > parentOpenIndex) return -1;
-  }
-
-  return -1;
+function findKeySpan(text, key) {
+  const re = new RegExp(`"${key}"\\s*:\\s*`);
+  const m = re.exec(text);
+  if (!m) return null;
+  const valueStart = m.index + m[0].length;
+  return { valueStart, valueEnd: skipValue(text, valueStart) };
 }
 
-function findChildBlockRange(lines, parentOpenIndex, childKey) {
-  const openRe = new RegExp(`^\\s*"${childKey}"\\s*:\\s*[{[]`);
-  let depth = 0;
-
-  for (let i = parentOpenIndex; i < lines.length; i++) {
-    const line = lines[i];
-    if (depth === 1 && openRe.test(line)) {
-      let innerDepth = 0;
-      for (let j = i; j < lines.length; j++) {
-        innerDepth += braceDelta(lines[j]);
-        if (innerDepth <= 0) return [i, j];
-      }
-      return null;
-    }
-
-    depth += braceDelta(line);
-    if (depth <= 0 && i > parentOpenIndex) return null;
-  }
-
-  return null;
+function scanWrappedValueFields(text, wrapperKey) {
+  const outer = findKeySpan(text, wrapperKey);
+  if (!outer || text[outer.valueStart] !== "{") return null;
+  const outerFields = scanChildren(text, outer.valueStart);
+  const valueField = outerFields.value;
+  if (!valueField || text[valueField.valueStart] !== "{") return null;
+  return scanChildren(text, valueField.valueStart);
 }
 
-function extractJsonBlock(lines, parentOpenIndex, childKey) {
-  const range = findChildBlockRange(lines, parentOpenIndex, childKey);
-  if (!range) return null;
-  const [start, end] = range;
-
-  const colonIdx = lines[start].indexOf(":");
-  const text = [lines[start].slice(colonIdx + 1), ...lines.slice(start + 1, end + 1)].join("\n");
-  const trimmed = text.replace(/,\s*$/, "");
-
-  return { value: JSON.parse(trimmed), start, end, hadTrailingComma: trimmed.length !== text.length };
+function isScalarSpan(text, span) {
+  const ch = text[span.valueStart];
+  return ch !== "{" && ch !== "[";
 }
 
-function scanObjectFields(lines, objectOpenIndex, { excludeScalarKeys = [], nestedKeys = [] } = {}) {
-  const scanned = scanScalarFields(lines, objectOpenIndex);
-  const excluded = new Set(excludeScalarKeys);
-
-  const fields = {};
-  const scalarLineIndexes = {};
-  for (const key of Object.keys(scanned.fields)) {
-    if (excluded.has(key)) continue;
-    fields[key] = scanned.fields[key];
-    scalarLineIndexes[key] = scanned.lineIndexes[key];
+function readSpans(text, fields, keys, excluded) {
+  const values = {};
+  const spans = {};
+  for (const key of keys) {
+    if (excluded && excluded.has(key)) continue;
+    const span = fields[key];
+    if (!span) continue;
+    values[key] = parseJson(text.slice(span.valueStart, span.valueEnd));
+    spans[key] = span;
   }
-
-  const blockRanges = {};
-  for (const key of nestedKeys) {
-    const extracted = extractJsonBlock(lines, objectOpenIndex, key);
-    if (extracted) {
-      fields[key] = extracted.value;
-      blockRanges[key] = extracted;
-    }
-  }
-
-  return { fields, scalarLineIndexes, blockRanges };
+  return { values, spans };
 }
 
 function parseSave(text) {
-  const lines = text.split(/\r\n|\r|\n/);
-  const invRe = /^\s*"([a-zA-Z]+JSON)"\s*:\s*"(.+)",?\s*$/;
-  const idRe = /^\s*"currentUniqueId"\s*:\s*(\d+),?\s*$/;
+  const playerStoreFields = scanWrappedValueFields(text, "playerStore") || {};
+
+  const idSpan = playerStoreFields.currentUniqueId || null;
+  const currentUniqueId = idSpan ? parseJson(text.slice(idSpan.valueStart, idSpan.valueEnd)) : null;
 
   const inventories = {};
-  const invLineIndexes = {};
-  let currentUniqueId = null;
-  let currentUniqueIdLineIndex = -1;
-
-  lines.forEach((line, i) => {
-    const idMatch = line.match(idRe);
-    if (idMatch) {
-      currentUniqueId = parseInt(idMatch[1], 10);
-      currentUniqueIdLineIndex = i;
-      return;
-    }
-    const m = line.match(invRe);
-    if (m && INV_KEYS.includes(m[1])) {
-      inventories[m[1]] = JSON.parse(unescapeJsonString(m[2]));
-      invLineIndexes[m[1]] = i;
-    }
-  });
+  const invSpans = {};
+  for (const key of INV_KEYS) {
+    const span = playerStoreFields[key];
+    if (!span) continue;
+    const inner = parseJson(text.slice(span.valueStart, span.valueEnd));
+    inventories[key] = parseJson(inner);
+    invSpans[key] = span;
+  }
 
   const missing = [];
   if (currentUniqueId === null) missing.push("currentUniqueId");
@@ -137,100 +140,55 @@ function parseSave(text) {
     throw new Error(`This doesn't look like a Probably Stolen save file - missing: ${missing.join(", ")}`);
   }
 
-  const excludedScalarKeys = [...INV_KEYS, "currentUniqueId"];
+  const excludedScalarKeys = new Set([...INV_KEYS, "currentUniqueId", ...PLAYER_STORE_NESTED_FIELDS]);
+  const scalarKeys = Object.keys(playerStoreFields)
+    .filter(key => !excludedScalarKeys.has(key) && isScalarSpan(text, playerStoreFields[key]));
+  const { values: playerStore, spans: playerStoreSpans } = readSpans(text, playerStoreFields, scalarKeys);
+  const { values: nestedValues, spans: playerStoreBlockSpans } = readSpans(text, playerStoreFields, PLAYER_STORE_NESTED_FIELDS);
+  Object.assign(playerStore, nestedValues);
 
-  let playerStore = {};
-  let playerStoreLineIndexes = {};
-  let playerStoreBlockRanges = {};
-  const playerStoreOpenIndex = lines.findIndex(l => /^\s*"playerStore"\s*:\s*\{\s*$/.test(l));
-  if (playerStoreOpenIndex !== -1) {
-    const valueOpenIndex = findChildObjectStart(lines, playerStoreOpenIndex, "value");
-    if (valueOpenIndex !== -1) {
-      const scanned = scanObjectFields(lines, valueOpenIndex, {
-        excludeScalarKeys: excludedScalarKeys,
-        nestedKeys: PLAYER_STORE_NESTED_FIELDS,
-      });
-      playerStore = scanned.fields;
-      playerStoreLineIndexes = scanned.scalarLineIndexes;
-      playerStoreBlockRanges = scanned.blockRanges;
-    }
-  }
-
-  let storeStation = {};
-  let storeStationLineIndexes = {};
-  let storeStationBlockRanges = {};
-  const storeStationOpenIndex = lines.findIndex(l => /^\s*"storeStation"\s*:\s*\{\s*$/.test(l));
-  if (storeStationOpenIndex !== -1) {
-    const valueOpenIndex = findChildObjectStart(lines, storeStationOpenIndex, "value");
-    if (valueOpenIndex !== -1) {
-      const scanned = scanObjectFields(lines, valueOpenIndex, { excludeScalarKeys: excludedScalarKeys });
-      storeStation = scanned.fields;
-      storeStationLineIndexes = scanned.scalarLineIndexes;
-      storeStationBlockRanges = scanned.blockRanges;
-    }
-  }
+  const storeStationFields = scanWrappedValueFields(text, "storeStation") || {};
+  const storeStationKeys = Object.keys(storeStationFields)
+    .filter(key => !excludedScalarKeys.has(key) && isScalarSpan(text, storeStationFields[key]));
+  const { values: storeStation, spans: storeStationSpans } = readSpans(text, storeStationFields, storeStationKeys);
 
   return {
-    lines, inventories, currentUniqueId, currentUniqueIdLineIndex, invLineIndexes,
-    playerStore, playerStoreLineIndexes, playerStoreBlockRanges,
-    storeStation, storeStationLineIndexes, storeStationBlockRanges,
+    text,
+    inventories, invSpans, currentUniqueId, idSpan,
+    playerStore, playerStoreSpans, playerStoreBlockSpans,
+    storeStation, storeStationSpans,
   };
-}
-
-function serializeScalarLine(originalLine, value) {
-  const m = originalLine.match(/^(\s*"[^"]+"\s*:\s*)(?:true|false|null|-?\d+(?:\.\d+)?|"(?:[^"\\]|\\.)*")(\s*,?\s*)$/);
-  return m[1] + JSON.stringify(value) + m[2];
-}
-
-function serializeBlockLine(originalStartLine, value, hadTrailingComma) {
-  const colonIdx = originalStartLine.indexOf(":");
-  const prefix = originalStartLine.slice(0, colonIdx + 1);
-  return `${prefix} ${JSON.stringify(value)}${hadTrailingComma ? "," : ""}`;
 }
 
 function serializeSave(state) {
   const edits = [];
 
-  edits.push({
-    start: state.currentUniqueIdLineIndex,
-    end: state.currentUniqueIdLineIndex,
-    lines: [`\t\t\t"currentUniqueId" : ${state.currentUniqueId},`],
-  });
+  edits.push({ ...state.idSpan, text: JSON.stringify(state.currentUniqueId) });
 
   for (const key of INV_KEYS) {
-    const idx = state.invLineIndexes[key];
+    const span = state.invSpans[key];
     const inner = JSON.stringify(state.inventories[key]);
-    edits.push({ start: idx, end: idx, lines: [`\t\t\t"${key}" : ${JSON.stringify(inner)},`] });
+    edits.push({ ...span, text: restoreQuoteEscapes(JSON.stringify(inner)) });
   }
 
-  for (const [lineIndexes, values] of [
-    [state.playerStoreLineIndexes, state.playerStore],
-    [state.storeStationLineIndexes, state.storeStation],
+  for (const [spans, values] of [
+    [state.playerStoreSpans, state.playerStore],
+    [state.playerStoreBlockSpans, state.playerStore],
+    [state.storeStationSpans, state.storeStation],
   ]) {
-    for (const key of Object.keys(lineIndexes)) {
-      const idx = lineIndexes[key];
-      edits.push({ start: idx, end: idx, lines: [serializeScalarLine(state.lines[idx], values[key])] });
+    for (const key of Object.keys(spans)) {
+      edits.push({ ...spans[key], text: JSON.stringify(values[key]) });
     }
   }
 
-  for (const [blockRanges, values] of [
-    [state.playerStoreBlockRanges, state.playerStore],
-    [state.storeStationBlockRanges, state.storeStation],
-  ]) {
-    for (const key of Object.keys(blockRanges)) {
-      const { start, end, hadTrailingComma } = blockRanges[key];
-      edits.push({ start, end, lines: [serializeBlockLine(state.lines[start], values[key], hadTrailingComma)] });
-    }
-  }
+  edits.sort((a, b) => b.valueStart - a.valueStart);
 
-  edits.sort((a, b) => b.start - a.start);
-
-  const lines = state.lines.slice();
+  let text = state.text;
   for (const edit of edits) {
-    lines.splice(edit.start, edit.end - edit.start + 1, ...edit.lines);
+    text = text.slice(0, edit.valueStart) + edit.text + text.slice(edit.valueEnd);
   }
 
-  return lines.join("\n");
+  return text;
 }
 
 export { parseSave, serializeSave };

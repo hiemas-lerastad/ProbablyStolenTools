@@ -2,9 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 
 import '../App.css'
 
-import { ContentPanel } from "../components/ContentPanel/ContentPanel.jsx"
-import { ContentButton } from "../components/ContentButton/ContentButton.jsx"
-import { IconButton } from "../components/IconButton/IconButton.jsx"
+import { ContentPanel, ContentButton, IconButton } from "../components/components.js"
 
 function Main(props) {
   const nav = (<IconButton onClickFunc={() => {}} iconName="home" className="main-nav-home" tag="a" href="/ProbablyStolenTools/" />)

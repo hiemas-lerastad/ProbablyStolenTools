@@ -1,0 +1,50 @@
+.rat-card .info-panel-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.rat-card-gene {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
+
+.rat-card-allele {
+  display: flex;
+  flex-direction: row;
+}
+
+.rat-card-bracket,
+.rat-card-spacer {
+  color: #126980;
+}
+
+.rat-card-spacer {
+  padding: 0 4px;
+}
+
+.rat-tier-minimum {
+  color: #964937;
+}
+
+.rat-tier-belowAverage {
+  color: #C07D7D;
+}
+
+.rat-tier-aboveAverage {
+  color: #538000;
+}
+
+.rat-tier-maximum {
+  color: #417C39;
+  text-decoration: underline;
+}
+
+.rat-parent-item {
+  font-style: italic;
+  margin-bottom: 4px;
+}
+

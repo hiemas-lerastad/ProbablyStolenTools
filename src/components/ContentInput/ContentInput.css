@@ -10,14 +10,14 @@
   background: #ecdca6;
 }
 
-.details-input {
+.details-card .content-input {
   border-color: #126980;
   color: #42A2AA;
   background: #292234;
 }
 
-.details-input:hover,
-.details-input:focus {
+.details-card .content-input:hover,
+.details-card .content-input:focus {
   background: #292234;
   border-color: #42A2AA;
 }

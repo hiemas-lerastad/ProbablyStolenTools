@@ -1,0 +1,40 @@
+.inventory-editor-filter-bar {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.inventory-item-list-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.inventory-item {
+  cursor: pointer;
+  border-spacing: 0px;
+  border: 4px solid transparent;
+}
+
+.inventory-item:not(.inventory-item-header):hover,
+.inventory-item.active {
+  outline: solid 4px #c1604a;
+}
+
+.inventory-item-cell {
+  text-align: center;
+}
+
+.inventory-item-raw-add {
+  display: flex;
+  gap: 4px;
+  padding-top: 8px;
+}
+
+.inventory-item-details-card .schema-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}

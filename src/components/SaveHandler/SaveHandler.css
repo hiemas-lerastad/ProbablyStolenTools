@@ -1,4 +1,20 @@
-.content-button {
+.save-handler {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  font-family: "Noto Sans", sans-serif;
+}
+
+.save-handler-label,
+.save-handler-input {
+  cursor: pointer;
+  font-family: "Noto Sans", sans-serif;
+}
+
+.save-handler-input::file-selector-button {
   border: 4px solid #c1604a;
   color: #8a3327;
   background: #ecdca6;
@@ -21,18 +37,7 @@
   );
 }
 
-.content-button:hover {
+.save-handler-input:hover::file-selector-button {
   color: #ecdca6;
   background: #c1604a;
-}
-
-.details-card .content-button {
-  border-color: #126980;
-  color: #42A2AA;
-  background: #292234;
-}
-
-.details-card .content-button:hover {
-  background: #126980;
-  color: #292234;
 }
