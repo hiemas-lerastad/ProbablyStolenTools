@@ -22,5 +22,5 @@ One-time setup after pushing this repo to GitHub:
 
 The site will be published at `https://<your-github-username>.github.io/ProbablyStolenTools/`.
 
-> **Note:** `vite.config.js` sets `base: '/RatColonyManager/'` to match this repo name.
+> **Note:** `vite.config.js` sets `base: '/ProbablyStolenTools/'` to match this repo name.
 > If you rename the GitHub repo, update that value to match.
