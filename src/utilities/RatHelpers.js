@@ -1,5 +1,13 @@
-import { INV_KEYS, RAT_IDENTIFIER, RAT_SEX_TAG, RAT_HEALTH_TAG } from "./constants.js"
+import { INV_KEYS, RAT_IDENTIFIER, RAT_SEX_TAG, RAT_HEALTH_TAG, RAT_SORT_FIELDS } from "./constants.js"
 import { getItemTag, extractItemFields, getCustomNameTag, findParentIndex } from "./ItemHelpers.js"
+
+const SORT_FIELD_DEFAULTS = Object.fromEntries(
+  RAT_SORT_FIELDS.filter(field => field.default !== undefined).map(field => [field.key, field.default])
+);
+
+function resolveSortValue(rat, key) {
+  return rat[key] ?? SORT_FIELD_DEFAULTS[key];
+}
 
 function isRatAlive(item) {
   const health = getItemTag(item, RAT_HEALTH_TAG);
@@ -124,7 +132,7 @@ function sortAndFilterRats(rats, view) {
     const min = view.valueFilterMin === "" || view.valueFilterMin == null ? -Infinity : Number(view.valueFilterMin);
     const max = view.valueFilterMax === "" || view.valueFilterMax == null ? Infinity : Number(view.valueFilterMax);
     list = list.filter(rat => {
-      const value = rat[view.valueFilterKey];
+      const value = resolveSortValue(rat, view.valueFilterKey);
       return typeof value === "number" && value >= min && value <= max;
     });
   }
@@ -132,8 +140,8 @@ function sortAndFilterRats(rats, view) {
   if (view.sortKey) {
     const direction = view.sortDir === "desc" ? -1 : 1;
     list = [...list].sort((a, b) => {
-      const av = a[view.sortKey];
-      const bv = b[view.sortKey];
+      const av = resolveSortValue(a, view.sortKey);
+      const bv = resolveSortValue(b, view.sortKey);
       if (av === bv) return 0;
       return av < bv ? -direction : direction;
     });

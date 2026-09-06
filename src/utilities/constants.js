@@ -261,23 +261,50 @@ const RAT_EXPORT_FIELDS = [
   { key: "health", source: "tag", name: "ANIMAL_HEALTH_TAG" },
   { key: "hunger", source: "tag", name: "ANIMAL_HUNGER_TAG" },
   { key: "maxHunger", source: "tag", name: "ANIMAL_MAX_HUNGER_TAG" },
+  { key: "weight", source: "tag", name: "ANIMAL_WEIGHT_TAG" },
   // maxHealth is not listed here - RAT_GENE_FIELDS' "maxHealth" gene already
   // reads this same tag (plus its alleles) and produces rat.maxHealth.
 ];
 
+// Score-tier templates, each as a { normal, reversed } pair - "normal" scores
+// a higher raw value as better (maximum scores highest), "reversed" is the
+// mirror image for stats where a lower raw value is better (e.g. hunger
+// rate - a rat that gets hungry slower is the good outcome, so its
+// "minimum" tier should score highest instead of lowest). Which member of
+// the pair applies to a given gene is decided by that gene's own `reversed`
+// flag in RAT_GENE_FIELDS, so any preset built from a template pair
+// automatically respects each gene's polarity - see tierValuesForGene below.
+const DEFAULT_TIER_VALUES = {
+  normal: { minimum: -2, belowAverage: -1, average: 0, aboveAverage: 1, maximum: 2 },
+  reversed: { minimum: 2, belowAverage: 1, average: 0, aboveAverage: -1, maximum: -2 },
+};
+// Rewards either extreme (min and max both score highly) - used by the
+// "Extremes Only" preset below.
+const EXTREMES_ONLY_TIER_VALUES = {
+  normal: { minimum: -4, belowAverage: 0, average: 0, aboveAverage: 0, maximum: 4 },
+  reversed: { minimum: 4, belowAverage: 0, average: 0, aboveAverage: 0, maximum: -4 },
+};
+
+function tierValuesForGene(gene, template) {
+  return { ...(gene.reversed ? template.reversed : template.normal) };
+}
+
 // Gene contract (deriveGeneFields in RatHelpers.js):
-//   { key, tag, tagA, tagB }
+//   { key, tag, tagA, tagB, reversed? }
 // Each gene has three related tags: the base/phenotype tag itself, plus two
 // alleles that aren't ordered (A isn't always the "lower" one). One entry
 // derives three record fields: `key` (the base tag's value, as-is),
 // `${key}Lower` = min(A, B), `${key}Higher` = max(A, B).
+// `reversed: true` marks a gene where a lower raw value is the better
+// outcome - every score-tier template above (and any new one) uses this to
+// pick its mirrored variant for that gene, via tierValuesForGene.
 const RAT_GENE_FIELDS = [
   { key: "growthRate", tag: "ANIMAL_GROWTH_RATE_TAG", tagA: "ANIMAL_GROWTH_RATE_TAG_ALLELE_A", tagB: "ANIMAL_GROWTH_RATE_TAG_ALLELE_B" },
   { key: "litterSize", tag: "ANIMAL_LITTER_SIZE_TAG", tagA: "ANIMAL_LITTER_SIZE_TAG_ALLELE_A", tagB: "ANIMAL_LITTER_SIZE_TAG_ALLELE_B" },
   { key: "immunity", tag: "ANIMAL_IMMUNITY_TAG", tagA: "ANIMAL_IMMUNITY_TAG_ALLELE_A", tagB: "ANIMAL_IMMUNITY_TAG_ALLELE_B" },
   { key: "maxHealth", tag: "ANIMAL_MAX_HEALTH_TAG", tagA: "ANIMAL_MAX_HEALTH_TAG_ALLELE_A", tagB: "ANIMAL_MAX_HEALTH_TAG_ALLELE_B" },
   { key: "longevity", tag: "ANIMAL_LONGEVITY_TAG", tagA: "ANIMAL_LONGEVITY_TAG_ALLELE_A", tagB: "ANIMAL_LONGEVITY_TAG_ALLELE_B" },
-  { key: "hungerRate", tag: "ANIMAL_HUNGER_RATE_TAG", tagA: "ANIMAL_HUNGER_RATE_TAG_ALLELE_A", tagB: "ANIMAL_HUNGER_RATE_TAG_ALLELE_B" },
+  { key: "hungerRate", tag: "ANIMAL_HUNGER_RATE_TAG", tagA: "ANIMAL_HUNGER_RATE_TAG_ALLELE_A", tagB: "ANIMAL_HUNGER_RATE_TAG_ALLELE_B", reversed: true },
 ];
 
 // Score-tier contract (scoreGroup in RatHelpers.js):
@@ -292,21 +319,24 @@ const RAT_GENE_FIELDS = [
 // no further changes needed. A gene's single tier-value set is applied to
 // all three of its underlying values (base, lower, higher) and summed - see
 // scoreGroup in RatHelpers.js.
-const DEFAULT_TIER_VALUES = { minimum: -2, belowAverage: -1, average: 0, aboveAverage: 1, maximum: 2 };
-
 const RAT_SCORE_FIELDS = {
-  ...Object.fromEntries(RAT_GENE_FIELDS.map(({ key }) => [key, { ...DEFAULT_TIER_VALUES }])),
+  ...Object.fromEntries(RAT_GENE_FIELDS.map(gene => [gene.key, tierValuesForGene(gene, DEFAULT_TIER_VALUES)])),
 };
 
-// Sortable/filterable field contract: { key, label, numeric? }
+// Sortable/filterable field contract: { key, label, numeric?, default? }
 // `key` must exist on the combined rat record (RAT_EXPORT_FIELDS,
 // RAT_GENE_FIELDS's base/Lower/Higher trio, or "totalScore"). `numeric`
 // marks fields usable in the value-range filter (as opposed to sex/name,
-// which are matched exactly / by substring instead).
+// which are matched exactly / by substring instead). `default` is used by
+// sortAndFilterRats (RatHelpers.js) in place of a rat's value for this field
+// when that value is null/undefined (e.g. a missing tag), so those rats sort
+// and filter consistently instead of null comparing unpredictably against
+// real numbers.
 const RAT_SORT_FIELDS = [
   { key: "name", label: "Name" },
   { key: "sex", label: "Sex" },
-  { key: "age", label: "Age", numeric: true },
+  { key: "parentItem", label: "Container", default: "" },
+  { key: "age", label: "Age", numeric: true, default: 0 },
   { key: "totalScore", label: "Score", numeric: true },
   ...RAT_GENE_FIELDS.flatMap(({ key, label = key }) => [
     { key, label, numeric: true },
@@ -330,6 +360,23 @@ const RAT_RECOMMENDATION_FIELDS = [
   { tier: "average", threshold: -2, label: "Investigate" },
   { tier: "belowAverage", threshold: -8, label: "Overall Negative" },
   { tier: "minimum", threshold: null, label: "Good Candidate for Neutering" },
+];
+
+// Preset contract (applyPreset in RatDataContext):
+//   { name, scoreFields, recommendationFields }
+// Applying a preset replaces the live scoreFields/recommendationFields state
+// wholesale (a deep clone is taken, so editing the applied settings afterward
+// never mutates the preset itself). Add more presets here in the same shape
+// - each just needs a full scoreFields object (one entry per RAT_SCORE_FIELDS
+// key) and a full recommendationFields array (same shape as
+// RAT_RECOMMENDATION_FIELDS).
+const RAT_PRESETS = [
+  { name: "Default", scoreFields: RAT_SCORE_FIELDS, recommendationFields: RAT_RECOMMENDATION_FIELDS },
+  {
+    name: "Extremes Only",
+    scoreFields: Object.fromEntries(RAT_GENE_FIELDS.map(gene => [gene.key, tierValuesForGene(gene, EXTREMES_ONLY_TIER_VALUES)])),
+    recommendationFields: RAT_RECOMMENDATION_FIELDS,
+  },
 ];
 
 export {
@@ -360,4 +407,5 @@ export {
   RAT_SCORE_FIELDS,
   RAT_SORT_FIELDS,
   RAT_RECOMMENDATION_FIELDS,
+  RAT_PRESETS,
 }

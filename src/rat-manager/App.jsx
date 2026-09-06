@@ -8,7 +8,7 @@ import { RatDataContext, RatDataProvider } from "../context/RatData.jsx"
 import { RAT_SORT_FIELDS } from "../utilities/constants.js"
 import { sortAndFilterRats } from "../utilities/RatHelpers.js"
 
-import { ContentPanel, InfoPanel, IconButton, SaveHandler, ContentInput, EditableField, RatCard } from "../components/components.js"
+import { ContentPanel, InfoPanel, IconButton, SaveHandler, ContentInput, ContentButton, EditableField, RatCard } from "../components/components.js"
 
 const VALUE_FILTER_FIELDS = RAT_SORT_FIELDS.filter(field => field.numeric);
 
@@ -82,6 +82,35 @@ function RatListControls({ sexFilter, setSexFilter, sortKey, setSortKey, sortDir
       {parentOptions.length > 0 &&
         <RatParentFilter parentOptions={parentOptions} parentFilter={parentFilter} setParentFilter={setParentFilter} />
       }
+    </div>
+  );
+}
+
+function RatPresetButtons() {
+  const { presets, applyPreset, savePreset, deletePreset } = useContext(RatDataContext);
+  const [newPresetName, setNewPresetName] = useState("");
+
+  function handleSave() {
+    const name = newPresetName.trim();
+    if (!name) return;
+    savePreset(name);
+    setNewPresetName("");
+  }
+
+  return (
+    <div className="rat-preset-buttons">
+      {presets.map(preset => (
+        <span key={preset.name} className="rat-preset-button">
+          <ContentButton label={preset.name} onClickFunc={() => applyPreset(preset)} />
+          {preset.custom &&
+            <IconButton iconName="close" tag="button" onClickFunc={() => deletePreset(preset.name)} />
+          }
+        </span>
+      ))}
+      <span className="rat-preset-button">
+        <ContentInput type="text" value={newPresetName} placeholder="Preset name" onChangeFunc={e => setNewPresetName(e.currentTarget.value)} />
+        <ContentButton label="Save Preset" onClickFunc={handleSave} />
+      </span>
     </div>
   );
 }
@@ -194,6 +223,7 @@ function Main(props) {
         <SaveHandler onLoad={handleSaveLoaded} />
       </InfoPanel>
       <InfoPanel title="Settings" collapsable={true} collapsedState={true}>
+        <RatPresetButtons />
         <RatScoreConfigEditor />
         <RatRecommendationConfigEditor />
       </InfoPanel>

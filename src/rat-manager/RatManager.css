@@ -31,3 +31,19 @@
   font-weight: bold;
   margin-bottom: 4px;
 }
+
+.rat-preset-buttons {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.rat-preset-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}

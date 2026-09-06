@@ -53,11 +53,13 @@ function RatCard({ rat }) {
     const recommendation = getRecommendation(rat.totalScore, recommendationFields);
 
     return (
-        <InfoPanel title={`${rat.customName || rat.name} (${rat.sex})`} collapsable={true} className="details-card rat-card">
+        <InfoPanel title={`${rat.customName || rat.name} (${rat.totalScore})`} collapsable={true} className="details-card rat-card">
           {recommendation &&
             <div className={`rat-recommendation ${tierClassName(recommendation.tier)}`}>{recommendation.label}</div>
           }
           <RatStat fieldKey={"age"} label={"Age"} rat={rat} decimals={0} value={0} />
+          <RatStat fieldKey={"sex"} label={"Sex"} rat={rat} />
+          <RatStat label={"Weight"} fieldKey={"weight"} rat={rat} decimals={0} value={0} />
           <span><RatStat fieldKey={"health"} label={"Health"} rat={rat} />/<RatStat fieldKey={"maxHealth"} rat={rat} /></span>
           <span><RatStat fieldKey={"hunger"} label={"Hunger"} rat={rat} />/<RatStat fieldKey={"maxHunger"} rat={rat} /></span>
           <RatGene label={"Growth Rate"} field={"growthRate"} rat={rat} />
@@ -69,7 +71,7 @@ function RatCard({ rat }) {
           {rat.immunity < 25 &&
             <span className="rat-tier-minimum">[Immunocomprimised]</span>
           }
-          {rat.immunity < 50 &&
+          {rat.immunity > 50 &&
             <span className="rat-tier-aboveAverage">[Strong Immunity]</span>
           }
           {rat.diseased &&
