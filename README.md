@@ -1,9 +1,9 @@
-# Rat Colony Manager
+# Probably Stolen Tools
 
-A minimal React + Vite "Hello, World!" app, set up to deploy to GitHub Pages.
+An app that contains a save editor and rat manager for Probably Stolen Game
 
 ## Development
-
+To run locally
 ```bash
 npm install
 npm run dev
@@ -20,7 +20,7 @@ One-time setup after pushing this repo to GitHub:
 2. Under **Build and deployment → Source**, select **GitHub Actions**.
 3. Push to `main` (or run the workflow manually from the **Actions** tab).
 
-The site will be published at `https://<your-github-username>.github.io/RatColonyManager/`.
+The site will be published at `https://<your-github-username>.github.io/ProbablyStolenTools/`.
 
 > **Note:** `vite.config.js` sets `base: '/RatColonyManager/'` to match this repo name.
 > If you rename the GitHub repo, update that value to match.
