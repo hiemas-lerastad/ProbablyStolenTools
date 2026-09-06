@@ -35,6 +35,10 @@ const PLAYER_STORE_NESTED_FIELDS = [
   "startingPerks"
 ];
 
+const STORE_STATION_NESTED_FIELDS = [
+  "storeEventManager"
+]
+
 const VALID_ESCAPE_CHARS = new Set(["\"", "\\", "/", "b", "f", "n", "r", "t", "u"]);
 
 // Schema node contract:
@@ -83,6 +87,8 @@ const STORE_SCHEMA = [
   { key: "isHardMode", type: "checkbox", path: ["playerStore"] },
   { key: "endlessMode", type: "checkbox", path: ["playerStore"] },
   { key: "skipIntro", type: "checkbox", path: ["playerStore"] },
+  { key: "futurStoreClientIdQueue", type: "array", itemType: "text" },
+  { key: "futurStoreClientDayQueue", type: "array", itemType: "number" },
 ];
 
 const STARTING_PERK_FIELDS = [
@@ -240,6 +246,134 @@ const CLIENT_MANAGER_SCHEMA = [
   { key: "wealthHistory", type: "array", itemType: "text", path: CLIENT_MANAGER_PATH },
   { key: "clientTracker", type: "dict", path: [...CLIENT_MANAGER_PATH, "clientTracker"], itemType: "number", mutable: false },
   { key: "permanentClientTracker", type: "dict", path: [...CLIENT_MANAGER_PATH, "permanentClientTracker"], itemType: "number", mutable: false },
+];
+
+// Nested itemSchema for EVENT_FIELDS' "negociationDatas" array below.
+const EVENT_NEGOCIATION_DATA_FIELDS = [
+  { key: "itemType", type: "text" },
+  { key: "value", type: "number" },
+  { key: "publicDisplay", type: "text" },
+  { key: "identifier", type: "text" },
+  { key: "reason", type: "text" },
+];
+
+// AddClientFromEvent/onUpdateActionId/onActiveActionId/onRemovedActionId were
+// null in the sample object, so their type is inferred from the sibling
+// addClientFromEventActionId (a real string) rather than the actual value -
+// double check these once a populated example is available.
+const EVENT_FIELDS = [
+  { key: "eventType", type: "number" },
+  { key: "eventArea", type: "number" },
+  { key: "identifier", type: "text" },
+  { key: "newsName", type: "text" },
+  { key: "displayName", type: "text" },
+  { key: "newsDescription", type: "text" },
+  { key: "cooldown", type: "number" },
+  { key: "duration", type: "number" },
+  { key: "totalDuration", type: "number" },
+  { key: "startDay", type: "number" },
+  { key: "currentDay", type: "number" },
+  { key: "isPermanent", type: "checkbox" },
+  { key: "isHidden", type: "checkbox" },
+  { key: "isDurationVisible", type: "checkbox" },
+  {
+    key: "negociationDatas",
+    type: "array",
+    itemSchema: EVENT_NEGOCIATION_DATA_FIELDS,
+    titleField: "publicDisplay",
+    defaultItem: () => ({ itemType: "", value: 0, publicDisplay: "", identifier: "", reason: "" }),
+  },
+  { key: "AddClientFromEvent", type: "text" },
+  { key: "onUpdateActionId", type: "text" },
+  { key: "onActiveActionId", type: "text" },
+  { key: "onRemovedActionId", type: "text" },
+  { key: "addClientFromEventActionId", type: "text" },
+  { key: "importance", type: "number" },
+  { key: "IsPriority", type: "checkbox" },
+  { key: "imcompatibleEvents", type: "array", itemType: "text" },
+  { key: "IsKnown", type: "checkbox" },
+  { key: "isHiddenFromNewsPaper", type: "checkbox" },
+  { key: "isFactionOperation", type: "checkbox" },
+  { key: "sourceFaction", type: "text" },
+  { key: "civilUnrestMod", type: "number" },
+  { key: "upperLevelFriendlinessMod", type: "number" },
+  { key: "secPowerMod", type: "number" },
+  { key: "revPowerMod", type: "number" },
+  { key: "bmPowerMod", type: "number" },
+  { key: "isLockDown", type: "checkbox" },
+  { key: "isBlockByLockDown", type: "checkbox" },
+];
+
+function createDefaultEvent() {
+  return {
+    eventType: 0,
+    eventArea: 0,
+    identifier: "",
+    newsName: "",
+    displayName: "",
+    newsDescription: "",
+    cooldown: 0,
+    duration: 0,
+    totalDuration: 0,
+    startDay: 0,
+    currentDay: 0,
+    isPermanent: false,
+    isHidden: false,
+    isDurationVisible: false,
+    negociationDatas: [],
+    AddClientFromEvent: null,
+    onUpdateActionId: null,
+    onActiveActionId: null,
+    onRemovedActionId: null,
+    addClientFromEventActionId: null,
+    importance: 0,
+    IsPriority: false,
+    imcompatibleEvents: [],
+    IsKnown: false,
+    isHiddenFromNewsPaper: false,
+    isFactionOperation: false,
+    sourceFaction: "",
+    civilUnrestMod: 0,
+    upperLevelFriendlinessMod: 0,
+    secPowerMod: 0,
+    revPowerMod: 0,
+    bmPowerMod: 0,
+    isLockDown: false,
+    isBlockByLockDown: false,
+  };
+}
+
+function eventTitle(item, index) {
+  return item.displayName || item.newsName || item.identifier || `Event ${index}`;
+}
+
+const EVENT_MANAGER_PATH = ["storeStation", "storeEventManager"];
+
+const STORE_EVENT_MANAGER_SCHEMA = [
+  {
+    key: "activeEvents",
+    type: "array",
+    path: EVENT_MANAGER_PATH,
+    itemSchema: EVENT_FIELDS,
+    titleFn: eventTitle,
+    defaultItem: createDefaultEvent,
+  },
+  {
+    key: "futurEvents",
+    type: "array",
+    path: EVENT_MANAGER_PATH,
+    itemSchema: EVENT_FIELDS,
+    titleFn: eventTitle,
+    defaultItem: createDefaultEvent,
+  },
+  { key: "futurEventsDay", type: "array", itemType: "number", path: EVENT_MANAGER_PATH },
+  {
+    key: "eventTracker",
+    type: "dict",
+    path: [...EVENT_MANAGER_PATH, "eventTracker"],
+    itemType: "number",
+    mutable: true,
+  },
 ];
 
 const RAT_IDENTIFIER = "rat";
@@ -403,6 +537,7 @@ export {
   INV_KEYS,
   INV_LABELS,
   PLAYER_STORE_NESTED_FIELDS,
+  STORE_STATION_NESTED_FIELDS,
 
   VALID_ESCAPE_CHARS,
 
@@ -418,6 +553,9 @@ export {
   ITEM_TAGS_SCHEMA,
   ITEM_FEATURE_LIST_SCHEMA,
   CLIENT_MANAGER_SCHEMA,
+  EVENT_FIELDS,
+  EVENT_NEGOCIATION_DATA_FIELDS,
+  STORE_EVENT_MANAGER_SCHEMA,
 
   RAT_IDENTIFIER,
   RAT_SEX_TAG,

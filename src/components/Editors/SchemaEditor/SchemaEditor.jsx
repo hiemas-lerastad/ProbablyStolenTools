@@ -137,10 +137,11 @@ function SchemaNodeList({ nodes, scopePath, saveData, setSaveData, className = "
           if (!node.itemSchema) {
             return (
               <div key={node.key} className="schema-editor-array schema-editor-array-scalar">
+                <span className="schema-editor-array-label">{node.label || node.key}</span>
                 {items.map((value, index) => (
                   <EditableField
                     key={index}
-                    label={node.label || node.key}
+                    label=""
                     type={node.itemType || "text"}
                     value={value}
                     onValueChange={(_, v) => handleLeafChange({ type: node.itemType }, [...fullPath, index], v)}
@@ -155,20 +156,22 @@ function SchemaNodeList({ nodes, scopePath, saveData, setSaveData, className = "
           }
 
           return (
-            <div key={node.key} className="schema-editor-array">
-              {items.map((item, index) => {
-                const titleText = <span>{resolveTitle(node, item, index)}</span>;
-                const buttons = mutable ? (<IconButton iconName="close" tag="button" onClickFunc={() => handleRemoveItem(fullPath, index)} />) : false;
-                return (
-                  <InfoPanel key={index} title={titleText} collapsable={true} className="schema-editor-array-item details-card" buttons={buttons}>
-                    <SchemaNodeList nodes={node.itemSchema} scopePath={[...fullPath, index]} saveData={saveData} setSaveData={setSaveData} />
-                  </InfoPanel>
-                );
-              })}
-              {mutable &&
-                <IconButton iconName="plus" tag="button" onClickFunc={() => handleAddItem(node, fullPath)} className="schema-editor-add" />
-              }
-            </div>
+            <InfoPanel key={node.key} title={node.label || node.key} collapsable={true} className="schema-editor-array-panel details-card">
+              <div className="schema-editor-array">
+                {items.map((item, index) => {
+                  const titleText = <span>{resolveTitle(node, item, index)}</span>;
+                  const buttons = mutable ? (<IconButton iconName="close" tag="button" onClickFunc={() => handleRemoveItem(fullPath, index)} />) : false;
+                  return (
+                    <InfoPanel key={index} title={titleText} collapsable={true} className="schema-editor-array-item details-card" buttons={buttons}>
+                      <SchemaNodeList nodes={node.itemSchema} scopePath={[...fullPath, index]} saveData={saveData} setSaveData={setSaveData} />
+                    </InfoPanel>
+                  );
+                })}
+                {mutable &&
+                  <IconButton iconName="plus" tag="button" onClickFunc={() => handleAddItem(node, fullPath)} className="schema-editor-add" />
+                }
+              </div>
+            </InfoPanel>
           );
         }
 

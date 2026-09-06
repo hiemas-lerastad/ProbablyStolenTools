@@ -5,13 +5,17 @@ import "../App.css";
 import { SaveDataContext, SaveDataProvider } from "../context/SaveData.jsx"
 
 import { ContentPanel, InfoPanel, IconButton, SaveHandler, PropertyEditor, ReputationEditor, SchemaEditor, InventoryEditor } from "../components/components.js"
-import { STARTING_PERKS_SCHEMA, ITEM_FEATURE_LIST_SCHEMA, CLIENT_MANAGER_SCHEMA } from "../utilities/constants.js"
+import { STARTING_PERKS_SCHEMA, ITEM_FEATURE_LIST_SCHEMA, CLIENT_MANAGER_SCHEMA, STORE_EVENT_MANAGER_SCHEMA } from "../utilities/constants.js"
 
 const STARTING_PERKS = [STARTING_PERKS_SCHEMA];
 const ITEM_FEATURE_LIST = [ITEM_FEATURE_LIST_SCHEMA];
 
 function Main(props) {
   const {saveData, setSaveData} = useContext(SaveDataContext);
+
+  useEffect(() => {
+    window.saveData = saveData;
+  }, [saveData]);
 
   function handleSaveLoaded(state) {
     setSaveData({ ...state, loadId: Date.now() })
@@ -52,6 +56,9 @@ function Main(props) {
           </InfoPanel>
           <InfoPanel title="Client Manager" collapsable={true} collapsedState={true} className="details-card">
             <SchemaEditor schema={CLIENT_MANAGER_SCHEMA} />
+          </InfoPanel>
+          <InfoPanel title="Events" collapsable={true} collapsedState={true} className="details-card">
+            <SchemaEditor schema={STORE_EVENT_MANAGER_SCHEMA} />
           </InfoPanel>
         </InfoPanel>
        </>

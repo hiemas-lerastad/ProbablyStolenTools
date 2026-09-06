@@ -1,6 +1,7 @@
 import {
   INV_KEYS,
   PLAYER_STORE_NESTED_FIELDS,
+  STORE_STATION_NESTED_FIELDS,
   VALID_ESCAPE_CHARS
 } from "./constants.js";
 
@@ -143,7 +144,7 @@ function parseSave(text) {
   const excludedScalarKeys = new Set([...INV_KEYS, "currentUniqueId", ...PLAYER_STORE_NESTED_FIELDS]);
   const scalarKeys = Object.keys(playerStoreFields)
     .filter(key => !excludedScalarKeys.has(key) && isScalarSpan(text, playerStoreFields[key]));
-  const { values: playerStore, spans: playerStoreSpans } = readSpans(text, playerStoreFields, scalarKeys);
+  const { values: playerStore, spans: playerStoreSpans } = readSpans(text, playerStoreFields, scalarKeys,);
   const { values: nestedValues, spans: playerStoreBlockSpans } = readSpans(text, playerStoreFields, PLAYER_STORE_NESTED_FIELDS);
   Object.assign(playerStore, nestedValues);
 
@@ -151,12 +152,14 @@ function parseSave(text) {
   const storeStationKeys = Object.keys(storeStationFields)
     .filter(key => !excludedScalarKeys.has(key) && isScalarSpan(text, storeStationFields[key]));
   const { values: storeStation, spans: storeStationSpans } = readSpans(text, storeStationFields, storeStationKeys);
+  const { values: storeNestedValues, spans: storeStationBlockSpans } = readSpans(text, storeStationFields, STORE_STATION_NESTED_FIELDS);
+  Object.assign(storeStation, storeNestedValues);
 
   return {
     text,
     inventories, invSpans, currentUniqueId, idSpan,
     playerStore, playerStoreSpans, playerStoreBlockSpans,
-    storeStation, storeStationSpans,
+    storeStation, storeStationSpans, storeStationBlockSpans,
   };
 }
 
@@ -175,6 +178,7 @@ function serializeSave(state) {
     [state.playerStoreSpans, state.playerStore],
     [state.playerStoreBlockSpans, state.playerStore],
     [state.storeStationSpans, state.storeStation],
+    [state.storeStationBlockSpans, state.storeStation],
   ]) {
     for (const key of Object.keys(spans)) {
       edits.push({ ...spans[key], text: JSON.stringify(values[key]) });

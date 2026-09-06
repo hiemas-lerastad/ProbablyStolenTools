@@ -25,6 +25,18 @@
   gap: 8px;
 }
 
+.schema-editor-array-scalar {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.schema-editor-array-label {
+  width: 100%;
+  font-weight: bold;
+}
+
 .schema-editor-add {
   align-self: flex-start;
 }
