@@ -377,6 +377,26 @@ const RAT_PRESETS = [
     scoreFields: Object.fromEntries(RAT_GENE_FIELDS.map(gene => [gene.key, tierValuesForGene(gene, EXTREMES_ONLY_TIER_VALUES)])),
     recommendationFields: RAT_RECOMMENDATION_FIELDS,
   },
+  {
+    // Each gene has its own magnitude here (not derived from a shared
+    // template like the presets above), so it's just written out directly.
+    name: "Weighted",
+    scoreFields: {
+      growthRate: { minimum: -10, belowAverage: -4, average: 0, aboveAverage: 4, maximum: 10 },
+      litterSize: { minimum: -4, belowAverage: -2, average: 0, aboveAverage: 2, maximum: 4 },
+      immunity: { minimum: -5, belowAverage: -2, average: 0, aboveAverage: 2, maximum: 5 },
+      maxHealth: { minimum: -3, belowAverage: -1, average: 0, aboveAverage: 1, maximum: 3 },
+      longevity: { minimum: -3, belowAverage: -1, average: 0, aboveAverage: 1, maximum: 3 },
+      hungerRate: { minimum: 2, belowAverage: -1, average: 0, aboveAverage: 1, maximum: -2 },
+    },
+    recommendationFields: [
+      { tier: "maximum", threshold: 18, label: "Good Candidate for Breeding" },
+      { tier: "aboveAverage", threshold: 10, label: "Overall Positive" },
+      { tier: "average", threshold: 7, label: "Investigate" },
+      { tier: "belowAverage", threshold: 3, label: "Overall Negative" },
+      { tier: "minimum", threshold: null, label: "Good Candidate for Neutering" },
+    ],
+  },
 ];
 
 export {
