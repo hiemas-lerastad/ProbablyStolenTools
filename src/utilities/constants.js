@@ -32,7 +32,9 @@ const PLAYER_STORE_NESTED_FIELDS = [
   "secData",
   "savedItemFeatureList",
   "storeClientManager",
-  "startingPerks"
+  "startingPerks",
+  "futurStoreClientIdQueue",
+  "futurStoreClientDayQueue"
 ];
 
 const STORE_STATION_NESTED_FIELDS = [
@@ -87,8 +89,8 @@ const STORE_SCHEMA = [
   { key: "isHardMode", type: "checkbox", path: ["playerStore"] },
   { key: "endlessMode", type: "checkbox", path: ["playerStore"] },
   { key: "skipIntro", type: "checkbox", path: ["playerStore"] },
-  { key: "futurStoreClientIdQueue", type: "array", itemType: "text" },
-  { key: "futurStoreClientDayQueue", type: "array", itemType: "number" },
+  { key: "futurStoreClientIdQueue", type: "array", itemType: "text", path: ["playerStore"]  },
+  { key: "futurStoreClientDayQueue", type: "array", itemType: "number", path: ["playerStore"]  },
 ];
 
 const STARTING_PERK_FIELDS = [
