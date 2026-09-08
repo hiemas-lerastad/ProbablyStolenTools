@@ -2,9 +2,31 @@ import { useContext } from "react";
 
 import { InfoPanel } from "../components.js"
 import { getRecommendation } from "../../utilities/RatHelpers.js"
+import { RAT_GENE_FIELDS } from "../../utilities/constants.js"
 import { RatDataContext } from "../../context/RatData.jsx"
 
 import "./RatCard.css"
+
+const REVERSED_GENE_KEYS = new Set(RAT_GENE_FIELDS.filter(gene => gene.reversed).map(gene => gene.key));
+
+const MIRRORED_TIER = {
+  minimum: "maximum",
+  maximum: "minimum",
+  belowAverage: "aboveAverage",
+  aboveAverage: "belowAverage",
+  average: "average",
+};
+
+// classifyTier's tier names describe a value's raw rank within its group
+// (minimum/maximum/...) - scoreGroup relies on that raw rank to index into a
+// gene's own (possibly already-mirrored) score table, so the tier stored on
+// the rat can't be flipped there without double-reversing reversed genes.
+// Display is a separate concern though: a reversed gene's lowest value is
+// the good outcome, so it should get the same "maximum"-styled highlight a
+// normal gene's highest value would.
+function displayTier(tier, reversed) {
+  return reversed ? MIRRORED_TIER[tier] ?? tier : tier;
+}
 
 function tierClassName(tier) {
   return tier ? `rat-tier-${tier}` : "";
@@ -28,10 +50,11 @@ function RatStat({ label, fieldKey, value, rat, decimals }) {
 function RatGene({ label, field, rat }) {
     const higherKeyName = field + "Higher"
     const lowerKeyName = field + "Lower"
+    const reversed = REVERSED_GENE_KEYS.has(field);
 
-    const valueTier = rat.tiers?.[field];
-    const higherTier = rat.tiers?.[higherKeyName];
-    const lowerTier = rat.tiers?.[lowerKeyName];
+    const valueTier = displayTier(rat.tiers?.[field], reversed);
+    const higherTier = displayTier(rat.tiers?.[higherKeyName], reversed);
+    const lowerTier = displayTier(rat.tiers?.[lowerKeyName], reversed);
 
     return (
         <div className="rat-card-gene">
